@@ -2,12 +2,13 @@
 aiohttp = "~=3.9"
 
 [dev-pacakages]
+black = "*"
 isort = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-mock = "*"
 ruff = "*"
-black = "*"
+twine = "*"
 
 [scripts]
 server = "python example/server.py"
