@@ -1,7 +1,7 @@
 [packages]
 aiohttp = "~=3.9"
 
-[dev-pacakages]
+[dev-packages]
 black = "*"
 isort = "*"
 pytest = "*"
