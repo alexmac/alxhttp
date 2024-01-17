@@ -1,0 +1,17 @@
+[packages]
+aiohttp = "~=3.9"
+
+[dev-pacakages]
+isort = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-mock = "*"
+ruff = "*"
+black = "*"
+
+[scripts]
+server = "python example/server.py"
+tidy = "bash -cxe 'isort . && black . && ruff .'"
+
+[requires]
+python_version = "3.11"

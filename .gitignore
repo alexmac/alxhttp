@@ -1,0 +1,7 @@
+.tox
+__pycache__
+.coverage
+coverage_output
+.ruff_cache
+dist
+*.egg-info
