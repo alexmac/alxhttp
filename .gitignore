@@ -3,6 +3,7 @@
 __pycache__
 .coverage
 coverage_output
+coverage.txt
 .ruff_cache
 dist
 *.egg-info
