@@ -1,8 +1,9 @@
 import asyncio
 import sys
 import traceback
+from typing import List
 
-from aiohttp.typedefs import Handler
+from aiohttp.typedefs import Handler, Middleware
 from aiohttp.web import HTTPException, Request, json_response, middleware
 
 from alxhttp.req_id import get_request_id, set_request_id
@@ -43,3 +44,7 @@ async def unhandled_error_handler(request: Request, handler: Handler):
 async def assign_req_id(request: Request, handler: Handler):
     set_request_id(request)
     return await handler(request)
+
+
+def default_middleware() -> List[Middleware]:
+    return [assign_req_id, unhandled_error_handler]

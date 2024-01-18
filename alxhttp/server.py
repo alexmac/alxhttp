@@ -6,13 +6,13 @@ from aiohttp import web
 from aiohttp.typedefs import Middleware
 
 from alxhttp.logging import JSONAccessLogger
-from alxhttp.middleware import assign_req_id, unhandled_error_handler
+from alxhttp.middleware import default_middleware
 
 
 class Server:
     def __init__(self, middlewares: Optional[List[Middleware]] = None):
         if middlewares is None:
-            middlewares = [assign_req_id, unhandled_error_handler]
+            middlewares = default_middleware()
         self.app = web.Application(middlewares=middlewares)
         self.host: str
         self.port: int
