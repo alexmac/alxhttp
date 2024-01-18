@@ -6,7 +6,7 @@ from functools import partial
 from typing import List, Optional
 
 from aiohttp.typedefs import Middleware
-from aiohttp.web import Request, StreamResponse, json_response
+from aiohttp.web import Request, StreamResponse, json_response, HTTPBadRequest
 
 from alxhttp.server import Server
 
@@ -19,6 +19,10 @@ async def test_fail(s: ExampleServer, req: Request) -> StreamResponse:
     raise ValueError("uh oh")
 
 
+async def test_400(s: ExampleServer, req: Request) -> StreamResponse:
+    raise HTTPBadRequest()
+
+
 class ExampleServer(Server):
     def __init__(self, middlewares: Optional[List[Middleware]] = None):
         super().__init__(middlewares=middlewares)
@@ -26,6 +30,8 @@ class ExampleServer(Server):
         self.app.router.add_get(r"/api/test", partial(test_api, self))
 
         self.app.router.add_get(r"/api/fail", partial(test_fail, self))
+
+        self.app.router.add_get(r"/api/400", partial(test_400, self))
 
 
 async def main():  # pragma: nocover

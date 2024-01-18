@@ -54,6 +54,20 @@ class Test(unittest.IsolatedAsyncioTestCase):
                         }
                 s.shutdown_event.set()
 
+    async def test_400(self):
+        s = ExampleServer()
+        async with asyncio.timeout(30):
+            async with asyncio.TaskGroup() as tg:
+                tg.create_task(s.run_app(log))
+                await asyncio.sleep(1)
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(
+                        URL.build(host=s.host, port=s.port, path="/api/400")
+                    ) as resp:
+                        assert resp.status == 400
+                        assert (await resp.text()) == "400: Bad Request"
+                s.shutdown_event.set()
+
     async def test_debug_on_off(self):
         s = ExampleServer()
         async with asyncio.timeout(30):
