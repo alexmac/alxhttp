@@ -3,7 +3,7 @@ import sys
 import traceback
 
 from aiohttp.typedefs import Handler
-from aiohttp.web import Request, json_response, middleware
+from aiohttp.web import HTTPException, Request, json_response, middleware
 
 from alxhttp.req_id import get_request_id, set_request_id
 
@@ -12,6 +12,8 @@ from alxhttp.req_id import get_request_id, set_request_id
 async def unhandled_error_handler(request: Request, handler: Handler):
     try:
         return await handler(request)
+    except HTTPException:
+        raise
     except Exception as e:
         exc = sys.exception()
         request.app.logger.error(
