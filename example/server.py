@@ -6,7 +6,7 @@ from functools import partial
 from typing import List, Optional
 
 from aiohttp.typedefs import Middleware
-from aiohttp.web import Request, StreamResponse, json_response, HTTPBadRequest
+from aiohttp.web import HTTPBadRequest, Request, StreamResponse, json_response
 
 from alxhttp.server import Server
 
