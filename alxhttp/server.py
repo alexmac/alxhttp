@@ -13,7 +13,7 @@ class Server:
     def __init__(self, middlewares: Optional[List[Middleware]] = None):
         if middlewares is None:
             middlewares = [assign_req_id, unhandled_error_handler]
-        self.app = web.Application(middlewares=[assign_req_id, unhandled_error_handler])
+        self.app = web.Application(middlewares=middlewares)
         self.host: str
         self.port: int
         self.shutdown_event = asyncio.Event()

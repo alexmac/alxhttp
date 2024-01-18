@@ -100,4 +100,10 @@ class Test(unittest.IsolatedAsyncioTestCase):
         async with asyncio.TaskGroup() as tg:
             tg.create_task(s.run_app(log))
             await asyncio.sleep(1)
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    URL.build(host=s.host, port=s.port, path="/api/fail")
+                ) as resp:
+                    assert resp.status == 500
+                    assert (await resp.text()).startswith("500 Internal Server Error")
             s.shutdown_event.set()
