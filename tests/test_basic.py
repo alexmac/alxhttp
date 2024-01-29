@@ -95,6 +95,52 @@ class Test(unittest.IsolatedAsyncioTestCase):
                             }
                 s.shutdown_event.set()
 
+    async def test_unknown_endpoint(self):
+        s = ExampleServer()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    URL.build(host=s.host, port=s.port, path="/api/unknown")
+            ) as resp:
+                assert resp.status == 404
+        s.shutdown_event.set()
+
+    async def test_post_request(self):
+        s = ExampleServer()
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                    URL.build(host=s.host, port=s.port, path="/api/test"),
+                    data={"key": "value"}
+            ) as resp:
+                assert resp.status == 200
+                assert (await resp.json()) == {"response": "Data received"}
+        s.shutdown_event.set()
+
+    async def test_server_timeout(self):
+        s = ExampleServer()
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=0.01)) as session:
+            try:
+                await session.get(
+                        URL.build(host=s.host, port=s.port, path="/api/slow")
+                )
+                assert False, "Expected a timeout exception"
+            except asyncio.TimeoutError:
+                pass # Expected
+        s.shutdown_event.set()
+
+    async def test_internal_server_error(self):
+        s = ExampleServer()
+        # Mocking an internal server function to raise an exception
+        with unittest.mock.patch("example.server.internal_function_that_fails", side_effect=Exception):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                        URL.build(host=s.host, port=s.port, path="/api/test")
+                ) as resp:
+                    assert resp.status == 500
+        s.shutdown_event.set()
+
+    # Additional test methods can be added below following the same pattern
+    # Make sure to clean up by setting 'shutdown_event' at the end of every test
+
     async def test_empty_middlewares(self):
         s = ExampleServer(middlewares=[])
         async with asyncio.TaskGroup() as tg:
