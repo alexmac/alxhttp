@@ -38,11 +38,13 @@ class Server:
 
         self.host = host
         self.port = port
-        if isinstance(site._server, asyncio.Server):
-            for s in site._server.sockets:
-                if p := s.getsockname():
-                    self.port = p[1]
-                    break
+        assert isinstance(site._server, asyncio.Server)
+        assert len(site._server.sockets) > 0
+        s = site._server.sockets[0]
+        assert s
+        p = s.getsockname()
+        assert p
+        self.port = p[1]
         log.info({"message": f"listening on {self.host}:{self.port}"})
 
         try:
