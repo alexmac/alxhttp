@@ -25,7 +25,7 @@ def _handle_directive_allowlist(
     feature: AllowList, feature_name: str, result: List[str]
 ):
     if isinstance(feature, Iterable):
-        result.append(f"{feature_name}({_flatten_directives(feature)})")
+        result.append(f"{feature_name}=({_flatten_directives(feature)})")
 
 
 def permissions_policy(
@@ -80,6 +80,7 @@ def content_security_policy(
     script_src: SourceList = _UnspecifiedSourceList,
     style_src: SourceList = _UnspecifiedSourceList,
     worker_src: SourceList = _UnspecifiedSourceList,
+    object_src: SourceList = _UnspecifiedSourceList,
 ) -> str:
     result = []
     _handle_sourcelist(default_src, "default-src", result)
@@ -89,4 +90,5 @@ def content_security_policy(
     _handle_sourcelist(script_src, "script-src", result)
     _handle_sourcelist(style_src, "style-src", result)
     _handle_sourcelist(worker_src, "worker-src", result)
-    return ";".join(result)
+    _handle_sourcelist(object_src, "object-src", result)
+    return "; ".join(result)
