@@ -6,7 +6,7 @@ def test_permissions_policy():
 
     assert permissions_policy(autoplay=[]) == "autoplay()"
 
-    assert permissions_policy(autoplay=[], fullscreen=[]) == "autoplay(),fullscreen()"
+    assert permissions_policy(autoplay=[], fullscreen=[]) == "autoplay(), fullscreen()"
 
     assert permissions_policy(autoplay=["self"]) == "autoplay(self)"
 

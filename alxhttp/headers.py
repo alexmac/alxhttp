@@ -35,7 +35,7 @@ def permissions_policy(
     result = []
     _handle_directive_allowlist(autoplay, "autoplay", result)
     _handle_directive_allowlist(fullscreen, "fullscreen", result)
-    return ",".join(result)
+    return ", ".join(result)
 
 
 quoted_sources = {
