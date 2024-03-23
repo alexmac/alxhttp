@@ -8,7 +8,7 @@ from typing import List, Optional
 from aiohttp.typedefs import Middleware
 from aiohttp.web import HTTPBadRequest, Request, StreamResponse, json_response
 from alxhttp.file import get_file
-
+from alxhttp.xray import init_xray
 from alxhttp.server import Server
 
 
@@ -56,6 +56,9 @@ class ExampleServer(Server):
 async def main():  # pragma: nocover
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger()
+
+    await init_xray(service_name="example", log=log)
+
     s = ExampleServer()
     await s.run_app(log, port=8080)
 

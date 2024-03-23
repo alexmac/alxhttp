@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alxhttp"
-version = "0.9.7"
+version = "0.9.8"
 authors = [
   { name="Alexander Macdonald", email="alex@alexmac.cc" },
 ]
@@ -18,6 +18,11 @@ classifiers = [
 ]
 dependencies = [
     'aiohttp ~= 3.9',
+]
+
+[project.optional-dependencies]
+xray = [ 
+  'aws-xray-sdk ~= 2.13' 
 ]
 
 [project.urls]

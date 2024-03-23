@@ -1,5 +1,6 @@
 [packages]
 aiohttp = "~=3.9"
+aws-xray-sdk = "*"
 
 [dev-packages]
 black = "*"
