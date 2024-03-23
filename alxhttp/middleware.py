@@ -10,6 +10,11 @@ from alxhttp.headers import content_security_policy
 
 from alxhttp.req_id import get_request_id, set_request_id
 
+try:
+    from aws_xray_sdk.ext.aiohttp.middleware import middleware as xray_middleware
+except ImportError:
+    xray_middleware = None
+
 
 def _apply_security_header_defaults(headers: CIMultiDict[str]) -> None:
     if "content-security-policy" not in headers:
@@ -72,5 +77,10 @@ async def assign_req_id(request: Request, handler: Handler):
     return await handler(request)
 
 
-def default_middleware() -> List[Middleware]:
-    return [assign_req_id, default_security_headers, unhandled_error_handler]
+def default_middleware(include_xray: bool = True) -> List[Middleware]:
+    middlewares = [assign_req_id, default_security_headers, unhandled_error_handler]
+
+    if xray_middleware is not None and include_xray:
+        middlewares.append(xray_middleware)
+
+    return middlewares

@@ -29,7 +29,7 @@ async def get_ec2_ipv4() -> str:
             return await r.text()
 
 
-async def init_xray(log: Logger, service_name: str, daemon_port: int = 40000):
+async def init_xray(log: Logger, service_name: str, daemon_port: int = 40000) -> bool:
     try:
         ec2_ipv4 = await get_ec2_ipv4()
 
@@ -39,5 +39,7 @@ async def init_xray(log: Logger, service_name: str, daemon_port: int = 40000):
             context=AsyncContext(),
             daemon_address=f"{ec2_ipv4}:{daemon_port}",
         )
+        return True
     except asyncio.TimeoutError:
         log.warning("Unable to get EC2 IP - XRay tracing disabled")
+        return False
