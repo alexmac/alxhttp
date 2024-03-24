@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alxhttp"
-version = "0.9.13"
+version = "0.9.17"
 authors = [
   { name="Alexander Macdonald", email="alex@alexmac.cc" },
 ]
