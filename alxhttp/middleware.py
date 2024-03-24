@@ -81,7 +81,7 @@ async def assign_req_id(request: Request, handler: Handler):
     set_request_id(request)
     token = current_request.set(request)
     try:
-    return await handler(request)
+        return await handler(request)
     finally:
         current_request.reset(token)
 
