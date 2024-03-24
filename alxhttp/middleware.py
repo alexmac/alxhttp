@@ -77,7 +77,7 @@ async def assign_req_id(request: Request, handler: Handler):
     return await handler(request)
 
 
-def default_middleware(include_xray: bool = True) -> List[Middleware]:
+def default_middleware(include_xray: bool = False) -> List[Middleware]:
     middlewares = [assign_req_id, default_security_headers, unhandled_error_handler]
 
     if xray_middleware is not None and include_xray:
