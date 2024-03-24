@@ -1,5 +1,6 @@
 import asyncio
 from logging import Logger
+import os
 import aiohttp
 from aws_xray_sdk.core import patch_all, xray_recorder
 from aws_xray_sdk.core.async_context import AsyncContext
@@ -37,8 +38,16 @@ async def init_xray(log: Logger, service_name: str, daemon_port: int = 40000) ->
         xray_recorder.configure(
             service=service_name,
             context=AsyncContext(),
+            sampling=False,
             daemon_address=f"{ec2_ipv4}:{daemon_port}",
         )
+        if log_group := os.environ.get("AWS_CLOUDWATCH_LOG_GROUP"):
+            log_resources = xray_recorder._aws_metadata.setdefault(
+                "cloudwatch_logs", [{}]
+            )
+            log_resources[0]["log_group"] = log_group
+
+        log.info("XRay tracing enabled")
         return True
     except asyncio.TimeoutError:
         log.warning("Unable to get EC2 IP - XRay tracing disabled")

@@ -13,6 +13,7 @@ from alxhttp.server import Server
 
 
 async def test_api(s: ExampleServer, req: Request) -> StreamResponse:
+    s.app.logger.info("test log")
     return json_response({})
 
 
