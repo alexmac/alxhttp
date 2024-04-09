@@ -8,7 +8,12 @@ from aiohttp.web import HTTPException, Request, json_response, middleware
 from multidict import CIMultiDict
 from alxhttp.headers import content_security_policy
 
-from alxhttp.req_id import get_request_id, set_request_id
+from alxhttp.req_id import get_request_id, set_request_id, current_request
+
+try:
+    from aws_xray_sdk.ext.aiohttp.middleware import middleware as xray_middleware
+except ImportError:
+    xray_middleware = None
 
 try:
     from aws_xray_sdk.ext.aiohttp.middleware import middleware as xray_middleware
@@ -74,13 +79,17 @@ async def unhandled_error_handler(request: Request, handler: Handler):
 @middleware
 async def assign_req_id(request: Request, handler: Handler):
     set_request_id(request)
-    return await handler(request)
+    token = current_request.set(request)
+    try:
+        return await handler(request)
+    finally:
+        current_request.reset(token)
 
 
 def default_middleware(include_xray: bool = False) -> List[Middleware]:
     middlewares = [assign_req_id, default_security_headers, unhandled_error_handler]
 
     if xray_middleware is not None and include_xray:
-        middlewares.append(xray_middleware)
+        middlewares.insert(0, xray_middleware)
 
     return middlewares

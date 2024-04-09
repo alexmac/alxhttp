@@ -5,15 +5,21 @@ from typing import List, Optional
 from aiohttp import web
 from aiohttp.typedefs import Middleware
 
-from alxhttp.logging import JSONAccessLogger
+from alxhttp.logging import JSONAccessLogger, get_json_server_logger
 from alxhttp.middleware import default_middleware
 
 
 class Server:
-    def __init__(self, middlewares: Optional[List[Middleware]] = None):
+    def __init__(
+        self,
+        middlewares: Optional[List[Middleware]] = None,
+        logger: Optional[logging.Logger] = None,
+    ):
         if middlewares is None:
             middlewares = default_middleware()
-        self.app = web.Application(middlewares=middlewares)
+        if logger is None:
+            logger = get_json_server_logger()
+        self.app = web.Application(middlewares=middlewares, logger=logger)
         self.host: str
         self.port: int
         self.shutdown_event = asyncio.Event()
