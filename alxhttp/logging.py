@@ -3,10 +3,12 @@ from json import dumps
 from time import time_ns
 from typing import Any
 
+import json
+from datetime import datetime, timezone
 from aiohttp.abc import AbstractAccessLogger
 from aiohttp.web import BaseRequest, StreamResponse
 
-from alxhttp.req_id import get_request_id
+from alxhttp.req_id import get_request_id, get_trace_id, get_request
 
 _compact_separators = (",", ":")
 
@@ -34,6 +36,10 @@ class JSONAccessLogger(AbstractAccessLogger):
         Taking some naming conventions from:
         https://github.com/opentracing/specification/blob/master/semantic_conventions.md
         """
+
+        request_id = get_request_id(request)
+        trace_id = get_trace_id(request)
+
         self.logger.info(
             compact_json(
                 {
@@ -46,7 +52,37 @@ class JSONAccessLogger(AbstractAccessLogger):
                         "url": str(request.url),
                     },
                     "component": "aiohttp",
-                    "request_id": get_request_id(request),
+                    "request_id": request_id,
+                    "traceId": trace_id,
                 }
             )
         )
+
+
+class JSONLogFilter(logging.Filter):
+    def filter(self, record) -> bool:
+        request = get_request()
+        request_id = get_request_id(request) if request else None
+        trace_id = get_trace_id(request) if request else None
+
+        log_record = {
+            "time_ns": time_ns(),
+            "request_id": request_id,
+            "traceId": trace_id,
+        }
+
+        if isinstance(record.msg, dict):
+            log_record = {**log_record, **record.msg}
+        else:
+            log_record["message"] = record.msg
+
+        record.msg = compact_json(log_record)
+
+        return True
+
+
+def get_json_server_logger() -> logging.Logger:
+    logger = logging.getLogger("aiohttp.web")
+    logger.addFilter(JSONLogFilter())
+
+    return logger
