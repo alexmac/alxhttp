@@ -3,7 +3,7 @@ from aiohttp.web import FileResponse
 
 
 def get_file(path: PathLike) -> Handler:
-    async def handler(_):
-        return FileResponse(path)
+  async def handler(_):
+    return FileResponse(path)
 
-    return handler
+  return handler

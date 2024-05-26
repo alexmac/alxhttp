@@ -1,31 +1,32 @@
+[tool.ruff]
+line-length = 100
+indent-width = 2
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+docstring-code-format = true
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "alxhttp"
-version = "0.9.18"
-authors = [
-  { name="Alexander Macdonald", email="alex@alexmac.cc" },
-]
+version = "0.9.19"
+authors = [{ name = "Alexander Macdonald", email = "alex@alexmac.cc" }]
 description = "A better base server for AioHTTP"
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
 ]
-dependencies = [
-    'aiohttp ~= 3.9',
-]
+dependencies = ['aiohttp ~= 3.9']
 
 [project.optional-dependencies]
-xray = [ 
-  'aws-xray-sdk ~= 2.13' 
-]
+xray = ['aws-xray-sdk ~= 2.13']
 
 [project.urls]
 Homepage = "https://github.com/alexmac/alxhttp"
-
-

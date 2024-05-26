@@ -1,5 +1,6 @@
 [run]
 branch = True
+data_file = coverage_output/.coverage
 
 [html]
 directory = coverage_output
