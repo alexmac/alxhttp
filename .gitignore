@@ -1,9 +1,7 @@
 .DS_Store
 .tox
 __pycache__
-coverage_output
-coverage.txt
+output
 .ruff_cache
 dist
 *.egg-info
-.pytest_cache

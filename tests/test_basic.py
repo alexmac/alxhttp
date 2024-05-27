@@ -160,3 +160,19 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
             assert resp.status == 200
             assert (await resp.text()).startswith('MIT License')
         s.shutdown_event.set()
+
+  async def test_405_is_json(self):
+    s = ExampleServer()
+    async with asyncio.TaskGroup() as tg:
+      tg.create_task(s.run_app(log))
+      await asyncio.sleep(1)
+      async with aiohttp.ClientSession() as session:
+        async with session.post(
+          URL.build(host=s.host, port=s.port, path='/api/license'), data='foo'
+        ) as resp:
+          assert resp.status == 405
+          assert await resp.json() == {
+            'error': 'Method Not Allowed',
+            'request_id': ANY,
+          }
+      s.shutdown_event.set()

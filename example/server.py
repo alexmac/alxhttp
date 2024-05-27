@@ -57,8 +57,14 @@ async def handler_test_fail(s: ExampleServer, req: Request) -> Response:
   raise ValueError('uh oh')
 
 
+class CustomHTTPBadRequest(HTTPBadRequest):
+  """Here to test a class that avoids the auto-jsonification"""
+
+  pass
+
+
 async def handler_test_400(s: ExampleServer, req: Request) -> Response:
-  raise HTTPBadRequest()
+  raise CustomHTTPBadRequest()
 
 
 class ExampleServer(Server):
