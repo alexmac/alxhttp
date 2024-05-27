@@ -28,6 +28,9 @@ dependencies = ['aiohttp ~= 3.9']
 [project.optional-dependencies]
 xray = ['aws-xray-sdk ~= 2.13']
 
+[tool.setuptools]
+packages = ["alxhttp"]
+
 [project.urls]
 Homepage = "https://github.com/alexmac/alxhttp"
 
