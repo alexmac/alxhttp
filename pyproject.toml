@@ -13,7 +13,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alxhttp"
-version = "0.9.20"
+version = "0.9.21"
 authors = [{ name = "Alexander Macdonald", email = "alex@alexmac.cc" }]
 description = "A better base server for AioHTTP"
 readme = "README.md"
@@ -29,7 +29,7 @@ dependencies = ['aiohttp ~= 3.9']
 xray = ['aws-xray-sdk ~= 2.13']
 
 [tool.setuptools]
-packages = ["alxhttp"]
+packages = ["alxhttp", "alxhttp.tests"]
 
 [project.urls]
 Homepage = "https://github.com/alexmac/alxhttp"
