@@ -1,5 +1,5 @@
 [tool.ruff]
-line-length = 100
+line-length = 120
 indent-width = 2
 
 [tool.ruff.format]
@@ -17,7 +17,7 @@ version = "0.9.21"
 authors = [{ name = "Alexander Macdonald", email = "alex@alexmac.cc" }]
 description = "A better base server for AioHTTP"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
@@ -29,7 +29,7 @@ dependencies = ['aiohttp ~= 3.9']
 xray = ['aws-xray-sdk ~= 2.13']
 
 [tool.setuptools]
-packages = ["alxhttp", "alxhttp.tests"]
+packages = ["alxhttp", "alxhttp.tests", "alxhttp.pydantic"]
 
 [project.urls]
 Homepage = "https://github.com/alexmac/alxhttp"

@@ -8,6 +8,22 @@
             "program": "${workspaceFolder}/example/server.py",
             "console": "integratedTerminal",
             "justMyCode": false,
+        },
+        {
+          // Disable cov to allow breakpoints when launched from VS Code Python
+          "name": "Python: Debug Tests",
+          "type": "debugpy",
+          "request": "launch",
+          "program": "${file}",
+          "purpose": ["debug-test"],
+          "console": "internalConsole",
+          "justMyCode": false,
+          "presentation": {
+            "hidden": true
+          },
+          "env": {
+            "PYTEST_ADDOPTS": "--no-cov"
+          }
         }
     ]
 }
