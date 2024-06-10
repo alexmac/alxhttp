@@ -1,9 +1,9 @@
 [packages]
 aiohttp = "~=3.9"
 aws-xray-sdk = "*"
-pydantic = "*"
-asyncpg = "*"
-pyhumps = "*"
+pydantic = "~=2.7"
+asyncpg = "~=0.29"
+pyhumps = "~=3.8"
 
 [dev-packages]
 black = "*"

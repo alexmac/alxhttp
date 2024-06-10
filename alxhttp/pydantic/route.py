@@ -5,12 +5,17 @@ from aiohttp import web
 import humps
 
 from alxhttp.pydantic.basemodel import Empty
-from alxhttp.pydantic.request import BodyType, MatchInfoType, QueryType, Request
+from alxhttp.pydantic.request import Request, MatchInfoType, BodyType, QueryType
 from alxhttp.pydantic.response import Response, ResponseType
-from alxhttp.server import Server, ServerHandler
+from aiohttp.web_response import StreamResponse
+from aiohttp.web_request import Request as WebRequest
+
+# from alxhttp.server import ServerHandler, ServerType
 from functools import partial
 
 from aiohttp.web_urldispatcher import UrlDispatcher
+
+from alxhttp.server import ServerType
 
 
 @dataclass
@@ -47,7 +52,7 @@ def route(
 ):
   def decorator(
     func: Callable[
-      [Server, Request[match_info, body, query]],
+      [ServerType, Request[match_info, body, query]],
       Awaitable[Response[response]],
     ],
   ):
@@ -55,9 +60,7 @@ def route(
     if not new_ts_name:
       new_ts_name = humps.camelize(func.__name__)
 
-    async def wrapper(
-      server: Server, request: web.Request, *args: Any, **kwargs: Any
-    ) -> Response[ResponseType]:
+    async def wrapper(server: ServerType, request: web.Request, *args: Any, **kwargs: Any) -> Response[ResponseType]:
       vr = await Request[match_info, body, query].from_request(request)
       return await func(server, vr, *args, **kwargs)
 
@@ -73,7 +76,11 @@ def route(
   return decorator
 
 
-def add_route(server: Server, router: UrlDispatcher, route_handler: ServerHandler) -> None:
+def add_route(
+  server: ServerType,
+  router: UrlDispatcher,
+  route_handler: Callable[[ServerType, WebRequest], Awaitable[StreamResponse]],
+) -> None:
   route_details = get_route_details(route_handler)
   handler = partial(route_handler, server)
   router.add_route(route_details.verb, route_details.name, handler)

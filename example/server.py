@@ -83,23 +83,6 @@ class RespType(MatchInfo, Body):
   pass
 
 
-@route('GET', '/api/users/{user_id}', match_info=MatchInfo, response=RespType, body=Body)
-async def validated_api(server: Server, request: ModelReq[MatchInfo, Body, Empty]) -> ModelResp[RespType]:
-  r = RespType.model_validate(
-    {
-      'user_id': request.match_info.user_id,
-      'user_name': request.body.user_name,
-    }
-  )
-
-  return ModelResp(body=r)
-
-
-@route('GET', '/api/empty', match_info=Empty, response=Empty, body=Empty, ts_name='overrideTsName')
-async def validated_empty_api(server: Server, request: ModelReq[Empty, Empty, Empty]) -> EmptyResponse:
-  return EmptyResponse()
-
-
 class ExampleServer(Server):
   def __init__(self, middlewares: Optional[List[Middleware]] = None, logger: Optional[logging.Logger] = None):
     super().__init__(middlewares=middlewares, logger=logger)
@@ -117,6 +100,23 @@ class ExampleServer(Server):
     self.app.router.add_get(r'/api/400', partial(handler_test_400, self))
 
     self.app.router.add_get(r'/api/license', get_file('LICENSE'))
+
+
+@route('GET', '/api/empty', ts_name='overrideTsName', match_info=Empty, body=Empty, response=Empty)
+async def validated_empty_api(server: ExampleServer, request: ModelReq[Empty, Empty, Empty]) -> EmptyResponse:
+  return EmptyResponse()
+
+
+@route('GET', '/api/users/{user_id}', match_info=MatchInfo, body=Body, response=RespType)
+async def validated_api(server: ExampleServer, request: ModelReq[MatchInfo, Body, Empty]) -> ModelResp[RespType]:
+  r = RespType.model_validate(
+    {
+      'user_id': request.match_info.user_id,
+      'user_name': request.body.user_name,
+    }
+  )
+
+  return ModelResp(body=r)
 
 
 async def main():  # pragma: nocover

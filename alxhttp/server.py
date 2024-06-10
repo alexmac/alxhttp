@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Awaitable, Callable, List, Optional
+from typing import Awaitable, Callable, List, Optional, TypeVar
 
 from aiohttp import web
 from aiohttp.web_request import Request
@@ -61,4 +61,6 @@ class Server:
       await runner.cleanup()
 
 
-ServerHandler = Callable[[Server, Request], Awaitable[StreamResponse]]
+ServerType = TypeVar('ServerType', bound=Server)
+
+ServerHandler = Callable[[ServerType, Request], Awaitable[StreamResponse]]
