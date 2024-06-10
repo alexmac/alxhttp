@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from aiohttp import BodyPartReader, MultipartReader
 from aiohttp.typedefs import Middleware
-from aiohttp.web import HTTPBadRequest, Request, Response, json_response
+from aiohttp.web import HTTPBadRequest, Request, Response, json_response, HTTPInsufficientStorage
 from alxhttp.file import get_file
 from alxhttp.pydantic.basemodel import BaseModel, Empty
 from alxhttp.pydantic.request import Request as ModelReq
@@ -61,6 +61,14 @@ async def handler_test_fail(s: ExampleServer, req: Request) -> Response:
   raise ValueError('uh oh')
 
 
+async def handler_test_default_error(s: ExampleServer, req: Request) -> Response:
+  raise HTTPInsufficientStorage
+
+
+# async def handler_test_server_error(s: ExampleServer, req: Request) -> Response:
+#   raise HTTPInsufficientStorage
+
+
 class CustomHTTPBadRequest(HTTPBadRequest):
   """Here to test a class that avoids the auto-jsonification"""
 
@@ -96,6 +104,8 @@ class ExampleServer(Server):
     self.app.router.add_get(r'/api/custom-sec-headers', partial(handler_test_custom_sec_headers, self))
 
     self.app.router.add_get(r'/api/fail', partial(handler_test_fail, self))
+
+    self.app.router.add_get(r'/api/default-aiohttp-error', partial(handler_test_default_error, self))
 
     self.app.router.add_get(r'/api/400', partial(handler_test_400, self))
 

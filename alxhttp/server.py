@@ -8,7 +8,7 @@ from aiohttp.web_response import StreamResponse
 from aiohttp.typedefs import Middleware
 
 from alxhttp.logging import JSONAccessLogger, get_json_server_logger
-from alxhttp.middleware import default_middleware
+from alxhttp.middleware.defaults import default_middleware
 
 
 class Server:

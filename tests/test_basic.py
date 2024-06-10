@@ -5,12 +5,14 @@ import logging
 import unittest
 from unittest.mock import ANY
 
+
 import aiohttp
 import pydantic
 from yarl import URL
 
 from alxhttp.json import json_response
-from alxhttp.middleware import default_middleware
+from alxhttp.middleware.g_state import g_state
+from alxhttp.middleware.defaults import default_middleware
 from example.server import ExampleServer
 from tests.debug_mode import set_debug_mode
 
@@ -81,6 +83,31 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
               'Server': ANY,
               'x-content-type-options': 'nosniff',
               'x-frame-options': 'SAMEORIGIN',
+            }
+        s.shutdown_event.set()
+
+  async def test_g_state(self):
+    md = default_middleware()
+    md.append(g_state)
+    s = ExampleServer(middlewares=md)
+    async with asyncio.timeout(30):
+      async with asyncio.TaskGroup() as tg:
+        tg.create_task(s.run_app(log))
+        await asyncio.sleep(1)
+        async with aiohttp.ClientSession() as session:
+          async with session.get(URL.build(host=s.host, port=s.port, path='/api/test')) as resp:
+            assert resp.status == 200
+            assert (await resp.text()) == '{}'
+            assert dict(resp.cookies['g_state']) == {
+              'expires': ANY,
+              'path': '/',
+              'comment': '',
+              'domain': 'localhost',
+              'max-age': '0',
+              'secure': '',
+              'httponly': '',
+              'version': '',
+              'samesite': '',
             }
         s.shutdown_event.set()
 
@@ -176,6 +203,21 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
         async with session.get(URL.build(host=s.host, port=s.port, path='/api/fail')) as resp:
           assert resp.status == 500
           assert (await resp.text()).startswith('500 Internal Server Error')
+      s.shutdown_event.set()
+
+  async def test_default_error(self):
+    s = ExampleServer()
+    async with asyncio.TaskGroup() as tg:
+      tg.create_task(s.run_app(log))
+      await asyncio.sleep(1)
+      async with aiohttp.ClientSession() as session:
+        async with session.get(URL.build(host=s.host, port=s.port, path='/api/default-aiohttp-error')) as resp:
+          assert resp.status == 507
+          assert await resp.json() == {
+            'error': 'Insufficient Storage',
+            'request_id': ANY,
+          }
+
       s.shutdown_event.set()
 
   async def test_get_file(self):

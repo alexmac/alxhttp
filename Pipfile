@@ -4,6 +4,8 @@ aws-xray-sdk = "*"
 pydantic = "~=2.7"
 asyncpg = "~=0.29"
 pyhumps = "~=3.8"
+pglast = "*"
+watchdog = "*"
 
 [dev-packages]
 black = "*"

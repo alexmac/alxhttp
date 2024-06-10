@@ -14,9 +14,7 @@ def test_permissions_policy():
 
   assert permissions_policy(autoplay=['*']) == 'autoplay=(*)'
 
-  assert (
-    permissions_policy(autoplay=['https://a.example.com']) == 'autoplay=("https://a.example.com")'
-  )
+  assert permissions_policy(autoplay=['https://a.example.com']) == 'autoplay=("https://a.example.com")'
 
 
 def test_csp():
