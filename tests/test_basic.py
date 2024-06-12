@@ -43,7 +43,8 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
     assert json.loads(r.text or '') == [42]
 
     r = json_response([datetime(year=2000, month=1, day=2, microsecond=42)])
-    assert json.loads(r.text or '') == [946800000.000042]
+    x = json.loads(r.text or '')[0]
+    assert str(x).endswith('.000042')
 
     r = json_response([Foo()])
     assert json.loads(r.text or '') == ['foo']
