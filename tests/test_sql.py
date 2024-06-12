@@ -7,22 +7,12 @@ from unittest.mock import ANY
 
 import aiohttp
 from asyncpg import create_pool
-import pydantic
 from yarl import URL
 
 from alxhttp.pydantic.route import add_route
 from example.sqlserver import get_users_for_org, ExampleServer
 
 log = logging.getLogger()
-
-
-class Foo:
-  def __str__(self):
-    return 'foo'
-
-
-class TestModel(pydantic.BaseModel):
-  some_id: str
 
 
 @asynccontextmanager

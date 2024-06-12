@@ -24,7 +24,7 @@ class Foo:
     return 'foo'
 
 
-class TestModel(pydantic.BaseModel):
+class ModelTest(pydantic.BaseModel):
   some_id: str
 
 
@@ -49,7 +49,7 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
     r = json_response([Foo()])
     assert json.loads(r.text or '') == ['foo']
 
-    x = TestModel.model_validate({'some_id': 'foo'})
+    x = ModelTest.model_validate({'some_id': 'foo'})
 
     r = json_response([x])
     assert json.loads(r.text or '') == [{'some_id': 'foo'}]
