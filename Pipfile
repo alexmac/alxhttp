@@ -1,6 +1,11 @@
 [packages]
 aiohttp = "~=3.9"
 aws-xray-sdk = "*"
+pydantic = "~=2.7"
+asyncpg = "~=0.29"
+pyhumps = "~=3.8"
+pglast = "*"
+watchdog = "*"
 
 [dev-packages]
 black = "*"
@@ -18,4 +23,4 @@ tidy = "bash -cxe 'isort . && black . && ruff .'"
 upload = "twine upload dist/*"
 
 [requires]
-python_version = "3.11"
+python_version = "3.12"

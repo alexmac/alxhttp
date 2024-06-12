@@ -58,7 +58,7 @@ class JSONAccessLogger(AbstractAccessLogger):
 
 
 class JSONLogFilter(logging.Filter):
-  def filter(self, record) -> bool:
+  def filter(self, record: logging.LogRecord) -> bool:
     request = get_request()
     request_id = get_request_id(request) if request else None
     trace_id = get_trace_id(request) if request else None

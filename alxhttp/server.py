@@ -1,12 +1,14 @@
 import asyncio
 import logging
-from typing import List, Optional
+from typing import Awaitable, Callable, List, Optional, TypeVar
 
 from aiohttp import web
+from aiohttp.web_request import Request
+from aiohttp.web_response import StreamResponse
 from aiohttp.typedefs import Middleware
 
 from alxhttp.logging import JSONAccessLogger, get_json_server_logger
-from alxhttp.middleware import default_middleware
+from alxhttp.middleware.defaults import default_middleware
 
 
 class Server:
@@ -57,3 +59,8 @@ class Server:
       pass
     finally:
       await runner.cleanup()
+
+
+ServerType = TypeVar('ServerType', bound=Server)
+
+ServerHandler = Callable[[ServerType, Request], Awaitable[StreamResponse]]

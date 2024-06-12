@@ -1,5 +1,5 @@
 [tool.ruff]
-line-length = 100
+line-length = 200
 indent-width = 2
 
 [tool.ruff.format]
@@ -13,23 +13,35 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alxhttp"
-version = "0.9.21"
+version = "0.9.26"
 authors = [{ name = "Alexander Macdonald", email = "alex@alexmac.cc" }]
 description = "A better base server for AioHTTP"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
 ]
-dependencies = ['aiohttp ~= 3.9']
+dependencies = [
+  'aiohttp ~= 3.9',
+  'pydantic ~= 2.7',
+  'asyncpg ~= 0.29',
+  'pyhumps ~= 3.8',
+  'pglast ~= 6.2',
+  'watchdog ~=4.0',
+]
 
 [project.optional-dependencies]
 xray = ['aws-xray-sdk ~= 2.13']
 
 [tool.setuptools]
-packages = ["alxhttp", "alxhttp.tests"]
+packages = [
+  "alxhttp",
+  "alxhttp.tests",
+  "alxhttp.pydantic",
+  "alxhttp.middleware",
+]
 
 [project.urls]
 Homepage = "https://github.com/alexmac/alxhttp"

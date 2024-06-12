@@ -8,8 +8,10 @@ import aiohttp
 import aiohttp.abc
 from aiohttp.test_utils import make_mocked_request
 from multidict import CIMultiDict
+import pytest
 
 
+from alxhttp.json import JSONHTTPBadRequest
 from alxhttp.tests.multipart_bytes_writer import MultipartBytesWriter
 from alxhttp.tests.stream_reader import BytesStreamReader, JSONStreamReader
 from example.server import (
@@ -17,6 +19,8 @@ from example.server import (
   handler_test_custom_sec_headers,
   handler_test_json,
   handler_test_multipart,
+  validated_api,
+  validated_empty_api,
 )
 
 log = logging.getLogger()
@@ -45,6 +49,54 @@ class TestMockReqs(unittest.IsolatedAsyncioTestCase):
         'Server': ANY,
       }
     )
+
+  async def test_mock_request_to_validated_empty_api(self):
+    s = ExampleServer()
+    input_data = {}
+    req = make_mocked_request(
+      'GET',
+      '/api/empty',
+      payload=JSONStreamReader(input_data),
+    )
+    resp = await validated_empty_api(s, req)
+    await resp.prepare(req)
+    assert resp.status == 200
+    assert json.loads(resp.text or '') == {}
+
+  async def test_mock_request_to_validated_api(self):
+    s = ExampleServer()
+    input_data = {'user_name': 'Alex'}
+    user_id = 1234
+    req = make_mocked_request(
+      'GET',
+      f'/api/users/{user_id}',
+      payload=JSONStreamReader(input_data),
+    )
+    req.match_info['user_id'] = str(user_id)
+    resp = await validated_api(s, req)
+    await resp.prepare(req)
+    assert resp.status == 200
+    assert json.loads(resp.text or '') == {'user_id': user_id, 'user_name': 'Alex'}
+
+  async def test_mock_request_to_validated_api_with_bad_input(self):
+    s = ExampleServer()
+    input_data = {'user_name': 42}
+    user_id = 1234
+    req = make_mocked_request(
+      'GET',
+      f'/api/users/{user_id}',
+      payload=JSONStreamReader(input_data),
+    )
+    req.match_info['user_id'] = str(user_id)
+    with pytest.raises(JSONHTTPBadRequest) as e:
+      await validated_api(s, req)
+
+    assert e.value.status == 400
+    assert json.loads(e.value.text or '') == {
+      'errors': [
+        {'type': 'string_type', 'loc': ['body', 'user_name'], 'msg': 'Input should be a valid string', 'input': 42}
+      ]
+    }
 
   async def test_mock_request_with_json_body(self):
     s = ExampleServer()

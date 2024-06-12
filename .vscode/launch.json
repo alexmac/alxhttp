@@ -2,12 +2,36 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "example server",
-            "type": "python",
+            "name": "Server: Example",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/example/server.py",
             "console": "integratedTerminal",
             "justMyCode": false,
+        },
+        {
+          "name": "Server: SQL Example",
+          "type": "debugpy",
+          "request": "launch",
+          "program": "${workspaceFolder}/example/sqlserver.py",
+          "console": "integratedTerminal",
+          "justMyCode": false,
+      },
+        {
+          // Disable cov to allow breakpoints when launched from VS Code Python
+          "name": "Python: Debug Tests",
+          "type": "debugpy",
+          "request": "launch",
+          "program": "${file}",
+          "purpose": ["debug-test"],
+          "console": "internalConsole",
+          "justMyCode": false,
+          "presentation": {
+            "hidden": true
+          },
+          "env": {
+            "PYTEST_ADDOPTS": "--no-cov"
+          }
         }
     ]
 }
