@@ -48,9 +48,7 @@ class BaseModel(pydantic.BaseModel):
   - datetimes are serialized as float timestamps
   """
 
-  model_config = pydantic.ConfigDict(
-    extra='forbid', json_encoders={datetime: lambda v: v.timestamp()}
-  )
+  model_config = pydantic.ConfigDict(extra='forbid', json_encoders={datetime: lambda v: v.timestamp()})
 
   @classmethod
   def from_record(cls: Type[BaseModelType], record: asyncpg.Record | None) -> BaseModelType:

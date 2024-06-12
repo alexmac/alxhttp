@@ -65,10 +65,6 @@ async def handler_test_default_error(s: ExampleServer, req: Request) -> Response
   raise HTTPInsufficientStorage
 
 
-# async def handler_test_server_error(s: ExampleServer, req: Request) -> Response:
-#   raise HTTPInsufficientStorage
-
-
 class CustomHTTPBadRequest(HTTPBadRequest):
   """Here to test a class that avoids the auto-jsonification"""
 

@@ -17,7 +17,7 @@ jobs:
         run: |
           cd sql
           docker build --progress=plain -t postgres .
-          docker run -d --name pg postgres
+          docker run -d --name pg -p 5432:5432 postgres
 
       - name: Setup Packages
         shell: bash

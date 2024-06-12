@@ -6,7 +6,7 @@ from aiohttp.base_protocol import BaseProtocol
 
 
 class DummyBaseProtocol(BaseProtocol):
-  def __init__(self, loop):
+  def __init__(self, loop: asyncio.AbstractEventLoop):
     super().__init__(loop)
 
   # def connection_made(self, transport):
@@ -26,7 +26,7 @@ class BytesStreamReader(StreamReader):
   # def is_eof(self):
   # def at_eof(self):
 
-  async def read(self, n=-1):
+  async def read(self, n: int = -1):
     if not self._data:
       return b''
 
