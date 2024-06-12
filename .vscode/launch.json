@@ -2,8 +2,8 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "example server",
-            "type": "python",
+            "name": "Example Server",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/example/server.py",
             "console": "integratedTerminal",
