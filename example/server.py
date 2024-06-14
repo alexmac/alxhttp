@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import timedelta
 import logging
 from functools import partial
 from typing import List, Optional
@@ -8,6 +9,7 @@ from typing import List, Optional
 from aiohttp import BodyPartReader, MultipartReader
 from aiohttp.typedefs import Middleware
 from aiohttp.web import HTTPBadRequest, Request, Response, json_response, HTTPInsufficientStorage
+from alxhttp.cookies import HiddenCookie, PlainCookie
 from alxhttp.file import get_file
 from alxhttp.pydantic.basemodel import BaseModel, Empty
 from alxhttp.pydantic.request import Request as ModelReq
@@ -57,6 +59,34 @@ async def handler_test_custom_sec_headers(s: ExampleServer, req: Request) -> Res
   )
 
 
+c1 = PlainCookie('plaincookie', timedelta(days=1))
+c2 = HiddenCookie('hiddencookie', timedelta(days=1))
+
+
+async def handler_post_cookies(s: ExampleServer, req: Request) -> Response:
+  r = json_response(
+    {},
+  )
+  c1.set(r, 'plainvalue')
+  c2.set(r, 'hiddenvalue')
+  return r
+
+
+async def handler_del_cookies(s: ExampleServer, req: Request) -> Response:
+  r = json_response(
+    {},
+  )
+  c1.unset(r)
+  c2.unset(r)
+  return r
+
+
+async def handler_get_cookies(s: ExampleServer, req: Request) -> Response:
+  return json_response(
+    {'c1v': c1.get(req), 'c2v': c2.get(req)},
+  )
+
+
 async def handler_test_fail(s: ExampleServer, req: Request) -> Response:
   raise ValueError('uh oh')
 
@@ -94,6 +124,10 @@ class ExampleServer(Server):
     self.app.router.add_get(r'/api/test', partial(handler_test_api, self))
 
     self.app.router.add_get(r'/api/json', partial(handler_test_json, self))
+
+    self.app.router.add_get(r'/api/cookies', partial(handler_get_cookies, self))
+    self.app.router.add_post(r'/api/cookies', partial(handler_post_cookies, self))
+    self.app.router.add_delete(r'/api/cookies', partial(handler_del_cookies, self))
 
     self.app.router.add_post(r'/api/multipart', partial(handler_test_multipart, self))
 
