@@ -1,10 +1,12 @@
 [packages]
 aiohttp = "~=3.9"
-aws-xray-sdk = "*"
-pydantic = "~=2.7"
 asyncpg = "~=0.29"
-pyhumps = "~=3.8"
+aws-xray-sdk = "*"
 pglast = "*"
+pydantic = "~=2.7"
+pyhumps = "~=3.8"
+redis = "*"
+types-redis = "*"
 watchdog = "*"
 
 [dev-packages]
