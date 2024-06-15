@@ -4,8 +4,7 @@ from typing import Type, TypeVar
 import pydantic
 from aiohttp import web
 
-from alxhttp.pydantic.basemodel import BaseModel
-from alxhttp.json import JSONHTTPBadRequest
+from alxhttp.pydantic.basemodel import BaseModel, validation_error_to_400
 
 
 RequestType = TypeVar('RequestType', bound='Request')
@@ -36,4 +35,4 @@ class Request[MatchInfoType, BodyType, QueryType](BaseModel):
       m._web_request = request
       return m
     except pydantic.ValidationError as ve:
-      raise JSONHTTPBadRequest({'errors': [dict(x) for x in ve.errors(include_url=False)]}) from ve
+      raise validation_error_to_400(ve) from ve

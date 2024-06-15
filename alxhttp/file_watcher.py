@@ -16,6 +16,13 @@ def register_file_listener(file: str | Path, callback: Callable) -> None:
   print(f'watching {file}')
 
 
+def unregister_file_listener(
+  file: str | Path,
+) -> None:
+  global _watched_files
+  del _watched_files[str(file)]
+
+
 class FSWatchHandler(FileSystemEventHandler):
   def on_modified(self, event: FileSystemEvent) -> None:
     if event.is_directory:
@@ -27,6 +34,8 @@ class FSWatchHandler(FileSystemEventHandler):
         print(f'reloaded: {event.src_path}')
       except Exception as e:
         print(e)
+    else:
+      pass
 
 
 @contextmanager

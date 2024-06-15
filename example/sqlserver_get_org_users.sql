@@ -26,7 +26,7 @@ with
 , combined as (
     select
       ou.*
-    , coalesce(ur.roles, array[]::text[]) as roles
+    , array_to_json(coalesce(ur.roles, array[]::text[])) as roles
     from
       org_users ou
       left join user_roles ur on ou.user_id = ur.user_id
