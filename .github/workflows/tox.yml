@@ -19,6 +19,13 @@ jobs:
           docker build --progress=plain -t postgres .
           docker run -d --name pg -p 5432:5432 postgres
 
+      - name: Setup redis
+        shell: bash
+        run: |
+          cd redis
+          docker build --progress=plain -t redis .
+          docker run -d --name redis -p 6379:6379 redis
+
       - name: Setup Packages
         shell: bash
         run: |

@@ -29,6 +29,7 @@ dependencies = [
   'asyncpg ~= 0.29',
   'pyhumps ~= 3.8',
   'pglast ~= 6.2',
+  'redis ~= 5.0',
   'watchdog ~=4.0',
 ]
 
