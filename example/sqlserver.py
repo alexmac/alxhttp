@@ -76,6 +76,73 @@ async def get_users_for_org(server: ExampleServer, request: Request[MatchInfo, E
   return Response(body=org_users)
 
 
+class Org(BaseModel):
+  org_id: OrgID
+  org_name: str
+  created_at: datetime
+  updated_at: datetime
+
+
+GET_ORG = SQLValidator('sqlserver_get_org.sql', Org)
+
+
+@route(
+  'GET',
+  '/api/orgs/{org_id}',
+  match_info=MatchInfo,
+  response=Org,
+)
+async def get_org(server: ExampleServer, request: Request[MatchInfo, Empty, Empty]) -> Response[Org]:
+  async with server.pool.acquire() as conn:
+    org: Org = await GET_ORG.fetchrow(conn, request.match_info.org_id)
+
+  return Response(body=org)
+
+
+class OrgInvalid(BaseModel):
+  org_id: OrgID
+  # org_name: str - intentionally missing
+  created_at: datetime
+  updated_at: datetime
+
+
+GET_ORG_INVALID = SQLValidator('sqlserver_get_org.sql', OrgInvalid)
+
+
+@route(
+  'GET',
+  '/api/orgs/{org_id}/invalid',
+  match_info=MatchInfo,
+  response=OrgInvalid,
+)
+async def get_org_invalid(server: ExampleServer, request: Request[MatchInfo, Empty, Empty]) -> Response[OrgInvalid]:
+  async with server.pool.acquire() as conn:
+    org: OrgInvalid = await GET_ORG_INVALID.fetchrow(conn, request.match_info.org_id)
+
+  return Response(body=org)
+
+
+class OrgUsersList(BaseModel):
+  org_id: OrgID
+  users: List[UsersWithRoles]
+
+
+GET_ORG_USERS_LIST = SQLValidator('sqlserver_get_org_users_list.sql', OrgUsersList)
+
+
+@route(
+  'GET',
+  '/api/orgs/{org_id}/users/list',
+  match_info=MatchInfo,
+  response=OrgUsersList,
+)
+async def get_users_for_org_list(server: ExampleServer, request: Request[MatchInfo, Empty, Empty]) -> Response[OrgUsersList]:
+  async with server.pool.acquire() as conn:
+    org_users: OrgUsersList = await GET_ORG_USERS_LIST.fetchrow(conn, request.match_info.org_id)
+
+  return Response(body=org_users)
+
+
 async def main():  # pragma: nocover
   logging.basicConfig(level=logging.INFO)
   log = logging.getLogger()
@@ -88,7 +155,9 @@ async def main():  # pragma: nocover
   ) as pool:
     s = ExampleServer(pool)
 
+    add_route(s, s.app.router, get_org)
     add_route(s, s.app.router, get_users_for_org)
+    add_route(s, s.app.router, get_users_for_org_list)
 
     await s.run_app(log, port=8080)
 

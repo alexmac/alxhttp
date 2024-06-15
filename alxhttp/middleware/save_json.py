@@ -90,7 +90,7 @@ async def save_json(request: Request, handler: Handler) -> StreamResponse:
         )
       )
   else:
-    with open(f'output/{ts}_{req_id}.resp.json') as f:
+    with open(f'output/{ts}_{req_id}.resp.json', mode='x') as f:
       f.write(
         json.dumps(
           {

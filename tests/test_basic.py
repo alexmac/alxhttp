@@ -13,6 +13,7 @@ from yarl import URL
 from alxhttp.json import json_response
 from alxhttp.middleware.g_state import g_state
 from alxhttp.middleware.defaults import default_middleware
+from alxhttp.middleware.save_json import save_json
 from example.server import ExampleServer
 from tests.debug_mode import set_debug_mode
 
@@ -246,3 +247,27 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
             'request_id': ANY,
           }
       s.shutdown_event.set()
+
+  async def test_save_json(self):
+    dm = default_middleware()
+    dm.append(save_json)
+    s = ExampleServer(middlewares=dm)
+    async with asyncio.timeout(30):
+      async with asyncio.TaskGroup() as tg:
+        tg.create_task(s.run_app(log))
+        await asyncio.sleep(1)
+        async with aiohttp.ClientSession() as session:
+          async with session.get(URL.build(host=s.host, port=s.port, path='/api/license')) as resp:
+            assert resp.status == 200
+            assert (await resp.text()).startswith('MIT License')
+
+          async with session.get(URL.build(host=s.host, port=s.port, path='/api/default-aiohttp-error')) as resp:
+            assert resp.status == 507
+            assert await resp.json() == {
+              'error': 'Insufficient Storage',
+              'request_id': ANY,
+            }
+          async with session.get(URL.build(host=s.host, port=s.port, path='/api/test')) as resp:
+            assert resp.status == 200
+            assert (await resp.text()) == '{}'
+        s.shutdown_event.set()
