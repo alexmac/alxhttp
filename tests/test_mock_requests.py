@@ -91,9 +91,7 @@ class TestMockReqs(unittest.IsolatedAsyncioTestCase):
     with pytest.raises(ValidationError) as ve:
       await validated_api(s, req)
 
-    assert json.loads(json.dumps(ve.value.errors())) == [
-      {'type': 'string_type', 'loc': ['body', 'user_name'], 'msg': 'Input should be a valid string', 'input': 42, 'url': 'https://errors.pydantic.dev/2.7/v/string_type'}
-    ]
+    assert json.loads(json.dumps(ve.value.errors())) == [{'type': 'string_type', 'loc': ['body', 'user_name'], 'msg': 'Input should be a valid string', 'input': 42, 'url': ANY}]
 
   async def test_mock_request_with_json_body(self):
     s = ExampleServer()
