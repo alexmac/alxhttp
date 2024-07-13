@@ -32,7 +32,7 @@ with
       left join user_roles ur on ou.user_id = ur.user_id
   )
 select
-  $1                                                                         as org_id
-, coalesce(json_object_agg(combined.user_id, row_to_json(combined.*)), '{}') as users
+  $1                                as org_id
+, json_agg(row_to_json(combined.*)) as users
 from
   combined;

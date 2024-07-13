@@ -2,6 +2,7 @@ from typing import List
 
 from aiohttp.typedefs import Middleware
 
+from alxhttp.middleware.pydantic_validation import pydantic_validation
 from alxhttp.middleware.security_headers import security_headers
 from alxhttp.middleware.ensure_json_errors import ensure_json_errors
 from alxhttp.middleware.assign_req_id import assign_req_id
@@ -15,6 +16,7 @@ def default_middleware(include_xray: bool = False) -> List[Middleware]:
     security_headers,
     unhandled_errors,
     ensure_json_errors,
+    pydantic_validation,
   ]
 
   if include_xray:

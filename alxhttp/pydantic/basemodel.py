@@ -1,5 +1,4 @@
 import json
-import types
 import typing
 from datetime import datetime
 from typing import Type, TypeVar, get_type_hints
@@ -7,34 +6,43 @@ from typing import Type, TypeVar, get_type_hints
 import asyncpg
 import pydantic
 
-from alxhttp.json import JSONHTTPNotFound
-from alxhttp.pydantic.type_checks import is_dict, is_list, is_model_type
+from aiohttp.web import HTTPNotFound
+from alxhttp.pydantic.type_checks import is_dict, is_list, is_model_type, is_optional
 
 
-def recursive_json_loads(type, data: dict | list) -> dict | list:
+def recursive_json_loads(type, data):
   """
   json loads anything that requires recursive model verification
   """
+
+  # Unwrap optionals
+  if is_optional(type):
+    targs = typing.get_args(type)
+    return recursive_json_loads(targs[0], data)
+
+  if isinstance(data, str) and (is_dict(type) or is_list(type) or is_model_type(type)):
+    return recursive_json_loads(type, json.loads(data))
+
   if isinstance(data, dict):
+    assert is_dict(type) or is_model_type(type)
+
     for k, v in data.items():
-      if isinstance(v, str):
-        t = get_type_hints(type)[k]
+      if is_model_type(type):
+        t = get_type_hints(type).get(k)
+      else:
+        assert is_dict(type)
+        t = typing.get_args(type)[1]
 
-        # Unwrap optional
-        if typing.get_origin(t) == typing.Union:
-          targs = typing.get_args(t)
-          if targs[1] == types.NoneType:
-            t = targs[0]
-          else:
-            raise ValueError
+      # likely a mistake with the model/record that will be caught by pydantic
+      if not t:
+        continue
 
-        if is_list(t) or is_dict(t) or is_model_type(t):
-          # We've found something where the real type is a string, but the model
-          # type suggests we need to json.loads it
-          data[k] = recursive_json_loads(t, json.loads(data[k]))
+      data[k] = recursive_json_loads(t, v)
   elif isinstance(data, list):
-    if type is not str and len(data) > 1 and isinstance(data[0], str):
-      data = [recursive_json_loads(type, json.loads(d)) for d in data]
+    assert is_list(type)
+    type = typing.get_args(type)[0]
+    data = [recursive_json_loads(type, d) for d in data]
+
   return data
 
 
@@ -53,7 +61,7 @@ class BaseModel(pydantic.BaseModel):
   @classmethod
   def from_record(cls: Type[BaseModelType], record: asyncpg.Record | None) -> BaseModelType:
     if not record:
-      raise JSONHTTPNotFound()
+      raise HTTPNotFound()
     record_dict = dict(record)
     record_dict = recursive_json_loads(cls, record_dict)
     return cls.model_validate(record_dict)
