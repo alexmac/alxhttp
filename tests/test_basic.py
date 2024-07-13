@@ -174,6 +174,38 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
             assert (await resp.text()) == '400: Bad Request'
         s.shutdown_event.set()
 
+  async def test_custom_model(self):
+    s = ExampleServer()
+    async with asyncio.timeout(30):
+      async with asyncio.TaskGroup() as tg:
+        tg.create_task(s.run_app(log))
+        await asyncio.sleep(1)
+        async with aiohttp.ClientSession() as session:
+          async with session.get(URL.build(host=s.host, port=s.port, path='/api/400/custom-model')) as resp:
+            assert resp.status == 400
+            assert (await resp.json()) == {
+              'error': 'HTTPBadRequest',
+              'request_id': ANY,
+              'status_code': 400,
+              'some_id': 'foo',
+            }
+        s.shutdown_event.set()
+
+  async def test_custom_ok_model(self):
+    s = ExampleServer()
+    async with asyncio.timeout(30):
+      async with asyncio.TaskGroup() as tg:
+        tg.create_task(s.run_app(log))
+        await asyncio.sleep(1)
+        async with aiohttp.ClientSession() as session:
+          async with session.get(URL.build(host=s.host, port=s.port, path='/api/200/custom-model')) as resp:
+            assert resp.status == 200
+            assert (await resp.json()) == {
+              'some_id': 'foo',
+              'something': 42,
+            }
+        s.shutdown_event.set()
+
   async def test_debug_on_off(self):
     s = ExampleServer()
     async with asyncio.timeout(30):

@@ -2,11 +2,8 @@ from typing import Dict, List, Optional, Tuple
 from aiohttp.typedefs import Handler
 from aiohttp.web import Request, middleware, StreamResponse
 import pydantic
-from aiohttp.web_exceptions import HTTPBadRequest
 
-from alxhttp.errors import ErrorResponse
-from alxhttp.pydantic.basemodel import BaseModel
-from alxhttp.req_id import get_request, get_request_id
+from alxhttp.pydantic.basemodel import BaseModel, ErrorModel
 
 
 class PydanticErrorDetails(BaseModel):
@@ -17,8 +14,8 @@ class PydanticErrorDetails(BaseModel):
   ctx: Optional[Dict[str, str]] = None
 
 
-class PydanticErrorResponse(ErrorResponse):
-  error: str = pydantic.Field(default='PydanticValidationError')
+class PydanticValidationError(ErrorModel):
+  error: str = 'PydanticValidationError'
   errors: List[PydanticErrorDetails]
 
 
@@ -37,15 +34,4 @@ async def pydantic_validation(request: Request, handler: Handler) -> StreamRespo
   except pydantic.ValidationError as ve:
     raise PydanticValidationError(
       errors=[PydanticErrorDetails(type=x['type'], loc=fix_loc_list(x['loc']), msg=x['msg'], input=x['input'], ctx=x.get('ctx')) for x in ve.errors(include_url=False)]
-    ) from ve
-
-
-class PydanticValidationError(HTTPBadRequest):
-  def __init__(self, errors: List[PydanticErrorDetails]):
-    request = get_request()
-    request_id = get_request_id(request) if request else None
-
-    super().__init__(
-      text=PydanticErrorResponse(status_code=400, request_id=request_id, errors=errors).model_dump_json(),
-      content_type='application/json',
-    )
+    ).exception() from ve

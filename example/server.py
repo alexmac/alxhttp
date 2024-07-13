@@ -11,7 +11,7 @@ from aiohttp.typedefs import Middleware
 from aiohttp.web import HTTPBadRequest, Request, Response, json_response, HTTPInsufficientStorage
 from alxhttp.cookies import HiddenCookie, PlainCookie
 from alxhttp.file import get_file
-from alxhttp.pydantic.basemodel import BaseModel, Empty
+from alxhttp.pydantic.basemodel import BaseModel, Empty, ErrorModel
 from alxhttp.pydantic.request import Request as ModelReq
 from alxhttp.pydantic.response import EmptyResponse, Response as ModelResp
 from alxhttp.pydantic.route import add_route, route
@@ -105,6 +105,23 @@ async def handler_test_400(s: ExampleServer, req: Request) -> Response:
   raise CustomHTTPBadRequest()
 
 
+class CustomErrorModel(ErrorModel):
+  some_id: str
+
+
+async def handler_test_custom_error_model(s: ExampleServer, req: Request) -> Response:
+  raise CustomErrorModel(some_id='foo').exception()
+
+
+class CustomSuccessfulModel(BaseModel):
+  some_id: str
+  something: int
+
+
+async def handler_test_custom_model(s: ExampleServer, req: Request) -> Response:
+  raise CustomSuccessfulModel(some_id='foo', something=42).exception()
+
+
 class MatchInfo(BaseModel):
   user_id: int
 
@@ -138,6 +155,10 @@ class ExampleServer(Server):
     self.app.router.add_get(r'/api/default-aiohttp-error', partial(handler_test_default_error, self))
 
     self.app.router.add_get(r'/api/400', partial(handler_test_400, self))
+
+    self.app.router.add_get(r'/api/400/custom-model', partial(handler_test_custom_error_model, self))
+
+    self.app.router.add_get(r'/api/200/custom-model', partial(handler_test_custom_model, self))
 
     self.app.router.add_get(r'/api/license', get_file('LICENSE'))
 
