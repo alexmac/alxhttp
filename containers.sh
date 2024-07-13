@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 docker rm -f  alxhttp-sql alxhttp-redis
 
 pushd sql
