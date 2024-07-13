@@ -3,8 +3,9 @@ import sys
 import traceback
 
 from aiohttp.typedefs import Handler
-from aiohttp.web import HTTPException, Request, json_response, middleware, StreamResponse
+from aiohttp.web import HTTPException, Request, middleware, StreamResponse
 
+from alxhttp.json import json_error_response
 from alxhttp.req_id import get_request_id
 
 
@@ -30,10 +31,4 @@ async def unhandled_errors(request: Request, handler: Handler) -> StreamResponse
     if loop.get_debug():
       request.app.logger.exception('Unhandled Exception')
 
-    return json_response(
-      {
-        'error': 'Unhandled Exception',
-        'request_id': get_request_id(request),
-      },
-      status=500,
-    )
+    return json_error_response(request, 'Unhandled Exception', 500)

@@ -6,7 +6,7 @@ from typing import Type, TypeVar, get_type_hints
 import asyncpg
 import pydantic
 
-from alxhttp.json import JSONHTTPBadRequest, JSONHTTPNotFound
+from aiohttp.web import HTTPNotFound
 from alxhttp.pydantic.type_checks import is_dict, is_list, is_model_type, is_optional
 
 
@@ -61,18 +61,11 @@ class BaseModel(pydantic.BaseModel):
   @classmethod
   def from_record(cls: Type[BaseModelType], record: asyncpg.Record | None) -> BaseModelType:
     if not record:
-      raise JSONHTTPNotFound()
+      raise HTTPNotFound()
     record_dict = dict(record)
     record_dict = recursive_json_loads(cls, record_dict)
-    try:
-      return cls.model_validate(record_dict)
-    except pydantic.ValidationError as ve:
-      raise validation_error_to_400(ve) from ve
+    return cls.model_validate(record_dict)
 
 
 class Empty(BaseModel):
   pass
-
-
-def validation_error_to_400(ve: pydantic.ValidationError) -> JSONHTTPBadRequest:
-  return JSONHTTPBadRequest({'errors': [dict(x) for x in ve.errors(include_url=False)]})

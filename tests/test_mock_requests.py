@@ -8,10 +8,10 @@ import aiohttp
 import aiohttp.abc
 from aiohttp.test_utils import make_mocked_request
 from multidict import CIMultiDict
+from pydantic import ValidationError
 import pytest
 
 
-from alxhttp.json import JSONHTTPBadRequest
 from alxhttp.tests.multipart_bytes_writer import MultipartBytesWriter
 from alxhttp.tests.stream_reader import BytesStreamReader, JSONStreamReader
 from example.server import (
@@ -88,15 +88,12 @@ class TestMockReqs(unittest.IsolatedAsyncioTestCase):
       payload=JSONStreamReader(input_data),
     )
     req.match_info['user_id'] = str(user_id)
-    with pytest.raises(JSONHTTPBadRequest) as e:
+    with pytest.raises(ValidationError) as ve:
       await validated_api(s, req)
 
-    assert e.value.status == 400
-    assert json.loads(e.value.text or '') == {
-      'errors': [
-        {'type': 'string_type', 'loc': ['body', 'user_name'], 'msg': 'Input should be a valid string', 'input': 42}
-      ]
-    }
+    assert json.loads(json.dumps(ve.value.errors())) == [
+      {'type': 'string_type', 'loc': ['body', 'user_name'], 'msg': 'Input should be a valid string', 'input': 42, 'url': 'https://errors.pydantic.dev/2.7/v/string_type'}
+    ]
 
   async def test_mock_request_with_json_body(self):
     s = ExampleServer()

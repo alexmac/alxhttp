@@ -148,6 +148,7 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
             assert (await resp.json()) == {
               'error': 'Unhandled Exception',
               'request_id': ANY,
+              'status_code': 500,
             }
             assert resp.headers == {
               'Content-Length': ANY,
@@ -186,6 +187,7 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
               assert (await resp.json()) == {
                 'error': 'Unhandled Exception',
                 'request_id': ANY,
+                'status_code': 500,
               }
           async with set_debug_mode(False):
             async with session.get(URL.build(host=s.host, port=s.port, path='/api/fail')) as resp:
@@ -193,6 +195,7 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
               assert (await resp.json()) == {
                 'error': 'Unhandled Exception',
                 'request_id': ANY,
+                'status_code': 500,
               }
         s.shutdown_event.set()
 
@@ -218,6 +221,7 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
           assert await resp.json() == {
             'error': 'Insufficient Storage',
             'request_id': ANY,
+            'status_code': 507,
           }
 
       s.shutdown_event.set()
@@ -245,6 +249,7 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
           assert await resp.json() == {
             'error': 'Method Not Allowed',
             'request_id': ANY,
+            'status_code': 405,
           }
       s.shutdown_event.set()
 
@@ -266,6 +271,7 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
             assert await resp.json() == {
               'error': 'Insufficient Storage',
               'request_id': ANY,
+              'status_code': 507,
             }
           async with session.get(URL.build(host=s.host, port=s.port, path='/api/test')) as resp:
             assert resp.status == 200

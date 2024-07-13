@@ -94,9 +94,10 @@ GET_ORG = SQLValidator('sqlserver_get_org.sql', Org)
 )
 async def get_org(server: ExampleServer, request: Request[MatchInfo, Empty, Empty]) -> Response[Org]:
   async with server.pool.acquire() as conn:
-    org: Org = await GET_ORG.fetchrow(conn, request.match_info.org_id)
+    orgs: List[Org] = await GET_ORG.fetch(conn, request.match_info.org_id)
 
-  return Response(body=org)
+  assert len(orgs) == 1
+  return Response(body=orgs[0])
 
 
 class OrgInvalid(BaseModel):

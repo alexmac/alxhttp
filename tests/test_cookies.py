@@ -20,7 +20,7 @@ class TestCookies(unittest.IsolatedAsyncioTestCase):
   async def test_redis_cookie(self):
     c = RedisHiddenCookie('mycookie', timedelta(hours=1))
 
-    async with redis.Redis(host='localhost', port=6379, db=0) as client:
+    async with redis.Redis(host='localhost', port=7379, db=0) as client:
       resp = json_response({})
       await c.set(client, resp, 'topsecret')
 

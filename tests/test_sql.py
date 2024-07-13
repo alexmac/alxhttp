@@ -26,6 +26,7 @@ async def run_server():
     create_pool(
       user='postgres',
       host='127.0.0.1',
+      port=6432,
       database='postgres',
       password='test',
     ) as pool,
@@ -37,15 +38,15 @@ async def run_server():
 class TestSQL(unittest.IsolatedAsyncioTestCase):
   async def test_sql_validator_missing(self):
     with pytest.raises(ValueError):
-      SQLValidator('does_not_exist.sql', Empty)
+      SQLValidator('does_not_exist.sql', Empty, force_validation=True)
 
   async def test_sql_validator_invalid(self):
     with pytest.raises(ValueError) as e:
-      SQLValidator('test_sql.invalid_sql.sql', Empty)
+      SQLValidator('test_sql.invalid_sql.sql', Empty, force_validation=True)
     assert e.value.args[0].startswith('Unable to parse')
 
   async def test_sql_validator_valid(self):
-    s = SQLValidator('test_sql.valid_sql.sql', Empty)
+    s = SQLValidator('test_sql.valid_sql.sql', Empty, force_validation=True)
     s.validate()
     assert s.query == 'select\n  *\nfrom\n  sometable;'
     assert str(s) == 'select\n  *\nfrom\n  sometable;'
@@ -224,6 +225,7 @@ class TestSQL(unittest.IsolatedAsyncioTestCase):
         async with session.get(URL.build(host=s.host, port=s.port, path='/api/orgs/org_a1b2c3d4e5f6/invalid')) as resp:
           assert resp.status == 400
           assert await resp.json() == {
+            'error': 'PydanticValidationError',
             'errors': [
               {
                 'input': 'Organization One',
@@ -232,8 +234,11 @@ class TestSQL(unittest.IsolatedAsyncioTestCase):
                 ],
                 'msg': 'Extra inputs are not permitted',
                 'type': 'extra_forbidden',
+                'ctx': None,
               },
             ],
+            'request_id': ANY,
+            'status_code': 400,
           }
 
       s.shutdown_event.set()
