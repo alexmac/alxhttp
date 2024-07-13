@@ -1,19 +1,15 @@
-from typing import Optional
-
 from alxhttp.json import json_dumps
-from alxhttp.pydantic.basemodel import BaseModel
-from aiohttp.web_exceptions import HTTPBadRequest
+from aiohttp.web_exceptions import HTTPBadRequest as WebHTTPBadRequest
 
 from alxhttp.req_id import get_request, get_request_id
 
 
-class ErrorResponse(BaseModel):
-  error: str
-  status_code: int
-  request_id: Optional[str] = None
+class HTTPBadRequest(WebHTTPBadRequest):
+  """
+  This exists for cases where you don't want to make a pydantic model to
+  represent the exception, but the pydantic approach is the preferred approach
+  """
 
-
-class JSONHTTPBadRequest(HTTPBadRequest):
   def __init__(self, message: dict):
     request = get_request()
     request_id = get_request_id(request) if request else None
