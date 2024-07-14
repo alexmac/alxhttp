@@ -1,13 +1,13 @@
 import json
 import typing
 from datetime import datetime
-from typing import Optional, Type, TypeVar, get_type_hints
+from typing import Annotated, Dict, List, Optional, Tuple, Type, TypeVar, get_type_hints
 
 import asyncpg
 import pydantic
 from aiohttp.web import HTTPError, HTTPNotFound, HTTPSuccessful
 
-from alxhttp.pydantic.type_checks import is_dict, is_list, is_model_type, is_optional
+from alxhttp.pydantic.type_checks import TSEnum, is_dict, is_list, is_model_type, is_optional
 from alxhttp.req_id import get_request, get_request_id
 
 
@@ -142,3 +142,28 @@ class ErrorModelException[ErrorModelType](HTTPError):
 
     # Unusual to perform this last, but we need status_code set correctly before calling it
     super().__init__(text=self.model.model_dump_json(), content_type='application/json')
+
+
+class PydanticErrorDetails(BaseModel):
+  """
+  How a pydantic validation error is represented to the UI
+  """
+
+  type: str
+  loc: List[int | str]
+  msg: str
+  input: str
+  ctx: Optional[Dict[str, str]] = None
+
+
+class PydanticValidationError(ErrorModel):
+  """
+  How a pydantic validation error is represented to the UI
+  """
+
+  error: Annotated[str, TSEnum('ErrorCode', 'PydanticValidationError')] = 'PydanticValidationError'
+  errors: List[PydanticErrorDetails]
+
+
+def fix_loc_list(loc: Tuple[int | str, ...]) -> List[int | str]:
+  return [x if isinstance(x, int) or isinstance(x, str) else str(x) for x in loc]

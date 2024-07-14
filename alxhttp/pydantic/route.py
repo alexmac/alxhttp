@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Awaitable, Callable, List, Optional, Type
+from typing import Any, Awaitable, Callable, List, Optional, Type, TypeVar
 
 import humps
 from aiohttp import web
@@ -13,9 +13,11 @@ from alxhttp.pydantic.request import BodyType, MatchInfoType, QueryType, Request
 from alxhttp.pydantic.response import Response, ResponseType
 from alxhttp.server import ServerType
 
+ErrorType = TypeVar('ErrorType', bound=ErrorModel)
+
 
 @dataclass
-class RouteDetails:
+class RouteDetails[ErrorType]:
   name: str
   verb: str
   match_info: Type
@@ -23,7 +25,7 @@ class RouteDetails:
   query: Type
   response: Type
   ts_name: str
-  errors: List[ErrorModel]
+  errors: List[Type[ErrorType]]
 
 
 def get_route_details(func) -> RouteDetails:
@@ -47,7 +49,7 @@ def route(
   body: Type[BodyType] = Empty,
   query: Type[QueryType] = Empty,
   response: Type[ResponseType] = Empty,
-  errors: Optional[List[ErrorModel]] = None,
+  errors: Optional[List[Type[ErrorType]]] = None,
 ):
   def decorator(
     func: Callable[
