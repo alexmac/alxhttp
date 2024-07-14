@@ -2,6 +2,17 @@ import types
 import typing
 
 
+class TSRaw:
+  def __init__(self, value):
+    self.value = value
+
+
+class TSEnum:
+  def __init__(self, name: str, value: str):
+    self.name = name
+    self.value = value
+
+
 def extract_type_param(t: type) -> type:
   targs = typing.get_args(t)
   if not targs:

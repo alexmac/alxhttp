@@ -1,20 +1,19 @@
 import asyncio
-from contextlib import asynccontextmanager
 import logging
 import unittest
+from contextlib import asynccontextmanager
 from unittest.mock import ANY
 
-
 import aiohttp
-from asyncpg import create_pool
 import pytest
+from asyncpg import create_pool
 from yarl import URL
 
+from alxhttp.middleware.defaults import default_middleware
 from alxhttp.pydantic.basemodel import Empty
 from alxhttp.pydantic.route import add_route
-from alxhttp.middleware.defaults import default_middleware
 from alxhttp.sql import SQLValidator
-from example.sqlserver import get_org, get_org_invalid, get_users_for_org, ExampleServer, get_users_for_org_list
+from example.sqlserver import ExampleServer, get_org, get_org_invalid, get_users_for_org, get_users_for_org_list
 
 log = logging.getLogger()
 
@@ -37,16 +36,18 @@ async def run_server():
 
 class TestSQL(unittest.IsolatedAsyncioTestCase):
   async def test_sql_validator_missing(self):
-    with pytest.raises(ValueError):
-      SQLValidator('does_not_exist.sql', Empty, force_validation=True)
+    with pytest.raises(FileNotFoundError):
+      s = SQLValidator('does_not_exist.sql', Empty)
+      s.validate()
 
   async def test_sql_validator_invalid(self):
     with pytest.raises(ValueError) as e:
-      SQLValidator('test_sql.invalid_sql.sql', Empty, force_validation=True)
+      s = SQLValidator('test_sql.invalid_sql.sql', Empty)
+      s.validate()
     assert e.value.args[0].startswith('Unable to parse')
 
   async def test_sql_validator_valid(self):
-    s = SQLValidator('test_sql.valid_sql.sql', Empty, force_validation=True)
+    s = SQLValidator('test_sql.valid_sql.sql', Empty)
     s.validate()
     assert s.query == 'select\n  *\nfrom\n  sometable;'
     assert str(s) == 'select\n  *\nfrom\n  sometable;'
