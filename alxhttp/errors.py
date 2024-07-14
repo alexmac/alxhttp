@@ -1,6 +1,6 @@
-from alxhttp.json import json_dumps
 from aiohttp.web_exceptions import HTTPBadRequest as WebHTTPBadRequest
 
+from alxhttp.json import json_dumps
 from alxhttp.req_id import get_request, get_request_id
 
 

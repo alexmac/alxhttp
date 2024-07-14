@@ -1,11 +1,12 @@
 import asyncio
-from datetime import datetime
 import logging
+from datetime import datetime
 from typing import Annotated, Dict, List, Optional
 
+from aiohttp.typedefs import Middleware
 from asyncpg import create_pool
 from asyncpg.pool import Pool
-from aiohttp.typedefs import Middleware
+
 from alxhttp.pydantic.basemodel import BaseModel, Empty
 from alxhttp.pydantic.request import Request
 from alxhttp.pydantic.response import Response

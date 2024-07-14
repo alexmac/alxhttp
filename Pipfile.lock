@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "189bb6ee6e03dbaf6b109b0431290c95240b9b9fb71b06b10aeebb4f1d0bb686"
+            "sha256": "4835e0047f165527fe2d109763b0683093fef26fb4edbfffe8bdaf2ccc8c1366"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1448,6 +1448,15 @@
             "markers": "python_version >= '3.8'",
             "version": "==24.4.2"
         },
+        "build": {
+            "hashes": [
+                "sha256:526263f4870c26f26c433545579475377b2b7588b6f1eac76a001e873ae3e19d",
+                "sha256:75e10f767a433d9a86e50d83f418e83efc18ede923ee5ff7df93b6cb0306c5d4"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==1.2.1"
+        },
         "certifi": {
             "hashes": [
                 "sha256:5a1e7645bc0ec61a09e26c36f6106dd4cf40c6db3a1fb6352b0244e7fb057c7b",
@@ -1795,6 +1804,14 @@
             "markers": "python_version >= '3.8'",
             "version": "==2.18.0"
         },
+        "pyproject-hooks": {
+            "hashes": [
+                "sha256:4b37730834edbd6bd37f26ece6b44802fb1c1ee2ece0e54ddff8bfc06db86965",
+                "sha256:7ceeefe9aec63a1064c18d939bdc3adf2d8aa1988a510afec15151578b232aa2"
+            ],
+            "markers": "python_version >= '3.7'",
+            "version": "==1.1.0"
+        },
         "pytest": {
             "hashes": [
                 "sha256:c434598117762e2bd304e526244f67bf66bbd7b5d6cf22138be51ff661980343",
@@ -1886,6 +1903,14 @@
             "index": "pypi",
             "markers": "python_version >= '3.7'",
             "version": "==0.5.1"
+        },
+        "setuptools": {
+            "hashes": [
+                "sha256:f171bab1dfbc86b132997f26a119f6056a57950d058587841a0082e8830f9dc5",
+                "sha256:fe384da74336c398e0d956d1cae0669bc02eed936cdb1d49b57de1990dc11ffc"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==70.3.0"
         },
         "twine": {
             "hashes": [

@@ -1,6 +1,7 @@
 from aiohttp.typedefs import Handler
-from aiohttp.web import HTTPException, Request, middleware, StreamResponse
+from aiohttp.web import HTTPException, Request, StreamResponse, middleware
 from multidict import CIMultiDict
+
 from alxhttp.headers import content_security_policy
 
 
@@ -23,4 +24,5 @@ async def security_headers(request: Request, handler: Handler) -> StreamResponse
     return resp
   except HTTPException as e:
     _apply_security_header_defaults(e.headers)
+    raise
     raise

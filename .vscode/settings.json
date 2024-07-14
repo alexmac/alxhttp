@@ -1,12 +1,16 @@
 {
-  "python.analysis.typeCheckingMode": "basic",
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
   "editor.detectIndentation": false,
+  "editor.fontLigatures": "'ss02', 'zero'",
   "debug.toolBarLocation": "commandCenter",
-  "coverage-gutters.coverageBaseDir": "output/coverage",
   "coverage-gutters.coverageReportFileName": "output/coverage/index.html",
+  "coverage-gutters.coverageBaseDir": "output/coverage",
+  "coverage-gutters.coverageFileNames": [
+    "coverage.xml"
+  ],
+  "python.analysis.typeCheckingMode": "basic",
   "python.testing.pytestArgs": [
     "tests"
   ],
@@ -15,7 +19,8 @@
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit"
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit",
     }
   },
   "Prettier-SQL.commaPosition": "before",

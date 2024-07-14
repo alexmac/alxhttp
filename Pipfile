@@ -15,13 +15,15 @@ isort = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-mock = "*"
+setuptools = "*"
 ruff = "*"
 twine = "*"
+build = "*"
 
 [scripts]
 server = "python example/server.py"
 tidy = "bash -cxe 'isort . && black . && ruff .'"
-# python3 -m build
+build = "python -m build"
 upload = "twine upload dist/*"
 
 [requires]

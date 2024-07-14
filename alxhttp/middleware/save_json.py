@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from aiohttp.typedefs import Handler
 from aiohttp.web import Request, Response, StreamResponse, middleware
 from aiohttp.web_exceptions import HTTPException
+
 from alxhttp.json import json_default
 from alxhttp.req_id import get_request_id
 
@@ -99,4 +100,5 @@ async def save_json(request: Request, handler: Handler) -> StreamResponse:
         )
       )
 
+  return resp
   return resp

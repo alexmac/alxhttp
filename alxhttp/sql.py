@@ -1,11 +1,13 @@
 import inspect
 import os
+import time
 from pathlib import Path
 from typing import List, Type
-from typing_extensions import TypeVar
-import time
+
 import asyncpg
 import pglast
+from typing_extensions import TypeVar
+
 from alxhttp.file_watcher import register_file_listener
 from alxhttp.pydantic.basemodel import BaseModel
 

@@ -6,7 +6,6 @@ from aiohttp import web
 
 from alxhttp.pydantic.basemodel import BaseModel
 
-
 RequestType = TypeVar('RequestType', bound='Request')
 MatchInfoType = TypeVar('MatchInfoType', bound=BaseModel)
 BodyType = TypeVar('BodyType', bound=BaseModel)
