@@ -2,10 +2,10 @@ from typing import List
 
 from aiohttp.typedefs import Middleware
 
+from alxhttp.middleware.assign_req_id import assign_req_id
+from alxhttp.middleware.ensure_json_errors import ensure_json_errors
 from alxhttp.middleware.pydantic_validation import pydantic_validation
 from alxhttp.middleware.security_headers import security_headers
-from alxhttp.middleware.ensure_json_errors import ensure_json_errors
-from alxhttp.middleware.assign_req_id import assign_req_id
 from alxhttp.middleware.unhandled_errors import unhandled_errors
 from alxhttp.xray import get_xray_middleware
 

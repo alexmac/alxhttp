@@ -1,7 +1,8 @@
 from typing import Dict, List, Optional, Tuple
-from aiohttp.typedefs import Handler
-from aiohttp.web import Request, middleware, StreamResponse
+
 import pydantic
+from aiohttp.typedefs import Handler
+from aiohttp.web import Request, StreamResponse, middleware
 
 from alxhttp.pydantic.basemodel import BaseModel, ErrorModel
 

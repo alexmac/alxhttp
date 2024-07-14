@@ -1,5 +1,5 @@
 from aiohttp.typedefs import Handler
-from aiohttp.web import Request, middleware, StreamResponse
+from aiohttp.web import Request, StreamResponse, middleware
 
 
 @middleware

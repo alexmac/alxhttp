@@ -1,9 +1,8 @@
 from aiohttp.typedefs import Handler
-from aiohttp.web import Request, middleware, StreamResponse
+from aiohttp.web import Request, StreamResponse, middleware
 from aiohttp.web_exceptions import HTTPClientError, HTTPServerError
 
 from alxhttp.json import json_error_response
-
 
 error_types = frozenset(
   [

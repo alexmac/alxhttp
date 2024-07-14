@@ -1,15 +1,13 @@
 import json
 import typing
 from datetime import datetime
-from typing import Type, TypeVar, get_type_hints
+from typing import Optional, Type, TypeVar, get_type_hints
 
 import asyncpg
 import pydantic
+from aiohttp.web import HTTPError, HTTPNotFound, HTTPSuccessful
 
-from aiohttp.web import HTTPNotFound, HTTPError, HTTPSuccessful
 from alxhttp.pydantic.type_checks import is_dict, is_list, is_model_type, is_optional
-from typing import Optional
-
 from alxhttp.req_id import get_request, get_request_id
 
 

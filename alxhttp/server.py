@@ -3,9 +3,9 @@ import logging
 from typing import Awaitable, Callable, List, Optional, TypeVar
 
 from aiohttp import web
+from aiohttp.typedefs import Middleware
 from aiohttp.web_request import Request
 from aiohttp.web_response import StreamResponse
-from aiohttp.typedefs import Middleware
 
 from alxhttp.logging import JSONAccessLogger, get_json_server_logger
 from alxhttp.middleware.defaults import default_middleware

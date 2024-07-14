@@ -6,7 +6,7 @@ from typing import Any
 from aiohttp.abc import AbstractAccessLogger
 from aiohttp.web import BaseRequest, StreamResponse
 
-from alxhttp.req_id import get_request_id, get_trace_id, get_request
+from alxhttp.req_id import get_request, get_request_id, get_trace_id
 
 _compact_separators = (',', ':')
 

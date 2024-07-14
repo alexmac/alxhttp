@@ -3,7 +3,7 @@ import sys
 import traceback
 
 from aiohttp.typedefs import Handler
-from aiohttp.web import HTTPException, Request, middleware, StreamResponse
+from aiohttp.web import HTTPException, Request, StreamResponse, middleware
 
 from alxhttp.json import json_error_response
 from alxhttp.req_id import get_request_id

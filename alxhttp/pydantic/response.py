@@ -1,9 +1,9 @@
+from concurrent.futures import Executor
 from typing import Optional, TypeVar
 
 import pydantic
 from aiohttp import web
 from aiohttp.typedefs import LooseHeaders
-from concurrent.futures import Executor
 
 from alxhttp.pydantic.basemodel import Empty
 

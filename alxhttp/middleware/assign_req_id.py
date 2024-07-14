@@ -1,7 +1,7 @@
 from aiohttp.typedefs import Handler
-from aiohttp.web import Request, middleware, StreamResponse
+from aiohttp.web import Request, StreamResponse, middleware
 
-from alxhttp.req_id import set_request_id, current_request
+from alxhttp.req_id import current_request, set_request_id
 
 
 @middleware

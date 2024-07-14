@@ -1,10 +1,10 @@
 import asyncio
-from logging import Logger
 import os
+from logging import Logger
 from typing import Optional
+
 import aiohttp
 from aiohttp.typedefs import Middleware
-
 from yarl import URL
 
 try:

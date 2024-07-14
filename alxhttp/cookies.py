@@ -2,10 +2,9 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+import redis.asyncio as redis
 from aiohttp.web_request import Request
 from aiohttp.web_response import Response
-
-import redis.asyncio as redis
 
 from alxhttp.schemas import gen_prefixed_id
 
