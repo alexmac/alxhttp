@@ -14,8 +14,16 @@ from alxhttp.pydantic.basemodel import BaseModel
 
 def get_caller_dir(idx: int = 1) -> Path:
   current_frame = inspect.currentframe()
-  caller_frame = inspect.getouterframes(current_frame, 2)
-  return Path(os.path.dirname(os.path.abspath(caller_frame[idx].filename)))
+
+  while idx > 0 and current_frame:
+    current_frame = current_frame.f_back
+    idx -= 1
+
+  if not current_frame:
+    raise ValueError
+
+  frame_info = inspect.getframeinfo(current_frame)
+  return Path(os.path.dirname(os.path.abspath(frame_info.filename)))
 
 
 ListType = TypeVar('ListType')
