@@ -13,7 +13,7 @@ from alxhttp.middleware.defaults import default_middleware
 from alxhttp.pydantic.basemodel import Empty
 from alxhttp.pydantic.route import add_route
 from alxhttp.sql import SQLValidator
-from example.sqlserver import ExampleServer, get_org, get_org_invalid, get_users_for_org, get_users_for_org_list
+from example.sqlserver import ExampleServer, get_org, get_org_invalid, get_users_for_org, get_users_for_org_list, get_users_for_org_valid_args
 
 log = logging.getLogger()
 
@@ -61,6 +61,78 @@ class TestSQL(unittest.IsolatedAsyncioTestCase):
 
       async with aiohttp.ClientSession() as session:
         async with session.get(URL.build(host=s.host, port=s.port, path='/api/orgs/org_a1b2c3d4e5f6/users')) as resp:
+          assert resp.status == 200
+          assert await resp.json() == {
+            'org_id': 'org_a1b2c3d4e5f6',
+            'users': {
+              'u_1a2b3c4d5e6f': {
+                'user_id': 'u_1a2b3c4d5e6f',
+                'created_at': ANY,
+                'updated_at': ANY,
+                'google': {
+                  'sub': 'sub_4d5e6f7a8b9c',
+                  'email': 'user1@example.com',
+                  'email_verified': True,
+                  'hd': 'example.com',
+                  'name': 'User One',
+                  'picture': 'https://example.com/user1.jpg',
+                  'given_name': 'User',
+                  'family_name': 'One',
+                  'created_at': ANY,
+                  'updated_at': ANY,
+                },
+                'roles': ['owner'],
+              },
+              'u_2b3c4d5e6f7a': {
+                'user_id': 'u_2b3c4d5e6f7a',
+                'created_at': ANY,
+                'updated_at': ANY,
+                'google': {
+                  'sub': 'sub_5e6f7a8b9c0d',
+                  'email': 'user2@example.com',
+                  'email_verified': True,
+                  'hd': 'example.com',
+                  'name': 'User Two',
+                  'picture': 'https://example.com/user2.jpg',
+                  'given_name': 'User',
+                  'family_name': 'Two',
+                  'created_at': ANY,
+                  'updated_at': ANY,
+                },
+                'roles': ['viewer'],
+              },
+              'u_3c4d5e6f7a8b': {
+                'user_id': 'u_3c4d5e6f7a8b',
+                'created_at': ANY,
+                'updated_at': ANY,
+                'google': {
+                  'sub': 'sub_6f7a8b9c0d1e',
+                  'email': 'user3@example.com',
+                  'email_verified': True,
+                  'hd': 'example.com',
+                  'name': 'User Three',
+                  'picture': 'https://example.com/user3.jpg',
+                  'given_name': 'User',
+                  'family_name': 'Three',
+                  'created_at': ANY,
+                  'updated_at': ANY,
+                },
+                'roles': ['viewer'],
+              },
+            },
+          }
+
+      s.shutdown_event.set()
+
+  async def test_api_orgs_users_valid_args(self):
+    async with run_server() as (pool, tg):
+      s = ExampleServer(pool)
+      add_route(s, s.app.router, get_users_for_org_valid_args)
+      tg.create_task(s.run_app(log))
+      await asyncio.sleep(1)
+
+      async with aiohttp.ClientSession() as session:
+        async with session.get(URL.build(host=s.host, port=s.port, path='/api/orgs/org_a1b2c3d4e5f6/users/valid_args')) as resp:
           assert resp.status == 200
           assert await resp.json() == {
             'org_id': 'org_a1b2c3d4e5f6',

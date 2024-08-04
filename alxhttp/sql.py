@@ -2,7 +2,7 @@ import inspect
 import os
 import time
 from pathlib import Path
-from typing import List, Type
+from typing import Any, Callable, List, Type
 
 import asyncpg
 import pglast
@@ -30,8 +30,8 @@ ListType = TypeVar('ListType')
 
 
 class SQLValidator[T: BaseModel]:
-  def __init__(self, file: str | Path, cls: Type[T]):
-    self.file = get_caller_dir(2) / file
+  def __init__(self, file: str | Path, cls: Type[T], stack_offset: int = 2):
+    self.file = get_caller_dir(stack_offset) / file
     self._query = None
     if modified_recently(self.file):
       self.validate()
@@ -65,6 +65,34 @@ class SQLValidator[T: BaseModel]:
 
   async def execute(self, conn: asyncpg.pool.PoolConnectionProxy, *args) -> str:
     return await conn.execute(self.query, *args)
+
+
+class SQLArgValidator[T: BaseModel, **P, PT](SQLValidator):
+  def __init__(self, file: str | Path, cls: Type[T], argorder: Callable[P, PT], stack_offset: int = 3):
+    super().__init__(file, cls, stack_offset=stack_offset)
+    self.argorder = argorder
+
+  def _get_query_args(self, *_args, **kwargs) -> List[Any]:
+    """
+    The kwargs could be in any order, so it's important that we re-order
+    based on the defined field order from `argorder`
+    """
+    ordered = []
+    for field_name in self.argorder.__fields__.keys():
+      ordered.append(kwargs[field_name])
+    return ordered
+
+  async def fetchrow(self, conn: asyncpg.pool.PoolConnectionProxy, *args: P.args, **kwargs: P.kwargs) -> T:
+    return await super().fetchrow(conn, *self._get_query_args(*args, **kwargs))
+
+  async def fetch(self, conn: asyncpg.pool.PoolConnectionProxy, *args: P.args, **kwargs: P.kwargs) -> List[T]:
+    return await super().fetch(conn, *self._get_query_args(*args, **kwargs))
+
+  async def fetchlist[TT](self, list_type: Type[TT], conn: asyncpg.pool.PoolConnectionProxy, *args: P.args, **kwargs: P.kwargs) -> List[TT]:
+    return await super().fetchlist(list_type, conn, *self._get_query_args(*args, **kwargs))
+
+  async def execute(self, conn: asyncpg.pool.PoolConnectionProxy, *args: P.args, **kwargs: P.kwargs) -> str:
+    return await super().execute(conn, *self._get_query_args(*args, **kwargs))
 
 
 def modified_recently(path: Path) -> bool:
