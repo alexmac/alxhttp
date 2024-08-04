@@ -13,7 +13,7 @@ from alxhttp.pydantic.response import Response
 from alxhttp.pydantic.route import add_route, route
 from alxhttp.schemas import prefixed_id
 from alxhttp.server import Server
-from alxhttp.sql import SQLValidator
+from alxhttp.sql import SQLArgValidator, SQLValidator
 
 
 class ExampleServer(Server):
@@ -73,6 +73,22 @@ GET_ORG_USERS = SQLValidator('sqlserver_get_org_users.sql', OrgUsers)
 async def get_users_for_org(server: ExampleServer, request: Request[MatchInfo, Empty, Empty]) -> Response[OrgUsers]:
   async with server.pool.acquire() as conn:
     org_users: OrgUsers = await GET_ORG_USERS.fetchrow(conn, request.match_info.org_id)
+
+  return Response(body=org_users)
+
+
+GET_ORG_USERS_VA = SQLArgValidator('sqlserver_get_org_users.sql', OrgUsers, MatchInfo)
+
+
+@route(
+  'GET',
+  '/api/orgs/{org_id}/users/valid_args',
+  match_info=MatchInfo,
+  response=OrgUsers,
+)
+async def get_users_for_org_valid_args(server: ExampleServer, request: Request[MatchInfo, Empty, Empty]) -> Response[OrgUsers]:
+  async with server.pool.acquire() as conn:
+    org_users: OrgUsers = await GET_ORG_USERS_VA.fetchrow(conn, org_id=request.match_info.org_id)
 
   return Response(body=org_users)
 
@@ -160,6 +176,7 @@ async def main():  # pragma: nocover
     add_route(s, s.app.router, get_org)
     add_route(s, s.app.router, get_users_for_org)
     add_route(s, s.app.router, get_users_for_org_list)
+    add_route(s, s.app.router, get_users_for_org_valid_args)
 
     await s.run_app(log, port=8080)
 
