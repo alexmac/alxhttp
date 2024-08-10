@@ -80,7 +80,7 @@ class SQLArgValidator[T: BaseModel, **P, PT](SQLValidator):
     This also gives a natural place to perform some type conversions
     """
     ordered = []
-    for field_name in self.argorder.__fields__.keys():
+    for field_name in self.argorder.model_fields.keys():
       arg = kwargs[field_name]
       if isinstance(arg, BaseModel):
         arg = arg.model_dump_json()
