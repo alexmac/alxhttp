@@ -1,13 +1,11 @@
+import json
 import logging
-from typing import Dict, List
 import unittest
-
+from typing import Dict, List
 
 import pydantic
 
-import json
 from alxhttp.pydantic.basemodel import recursive_json_loads
-
 
 log = logging.getLogger()
 
@@ -63,6 +61,10 @@ class ModelTest7(pydantic.BaseModel):
 
 class ModelTest8(pydantic.BaseModel):
   foo: Dict[str, Model]
+
+
+class ModelTest9(pydantic.BaseModel):
+  foo: ModelTest1 | ModelTest2
 
 
 class TestBasic(unittest.IsolatedAsyncioTestCase):
@@ -179,7 +181,7 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
       ],
     }
 
-  def test_rec_load87(self):
+  def test_rec_load8(self):
     assert recursive_json_loads(
       ModelTest8,
       {
@@ -192,3 +194,23 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
         'blah': {'some_id': 12},
       }
     }
+
+  def test_rec_load9(self):
+    assert recursive_json_loads(
+      ModelTest9,
+      {
+        'foo': json.dumps(
+          {
+            'some_id': 42,
+          }
+        )
+      },
+    ) == {'foo': {'some_id': 42}}
+    assert recursive_json_loads(
+      ModelTest9,
+      {
+        'foo': {
+          'some_id': 42,
+        }
+      },
+    ) == {'foo': {'some_id': 42}}

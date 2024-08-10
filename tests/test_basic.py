@@ -1,18 +1,17 @@
 import asyncio
-from datetime import datetime
 import json
 import logging
 import unittest
+from datetime import datetime
 from unittest.mock import ANY
-
 
 import aiohttp
 import pydantic
 from yarl import URL
 
 from alxhttp.json import json_response
-from alxhttp.middleware.g_state import g_state
 from alxhttp.middleware.defaults import default_middleware
+from alxhttp.middleware.g_state import g_state
 from alxhttp.middleware.save_json import save_json
 from example.server import ExampleServer
 from tests.debug_mode import set_debug_mode
@@ -282,6 +281,22 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
             'error': 'Method Not Allowed',
             'request_id': ANY,
             'status_code': 405,
+          }
+      s.shutdown_event.set()
+
+  async def test_non_pydantic_400(self):
+    s = ExampleServer()
+    async with asyncio.TaskGroup() as tg:
+      tg.create_task(s.run_app(log))
+      await asyncio.sleep(1)
+      async with aiohttp.ClientSession() as session:
+        async with session.get(URL.build(host=s.host, port=s.port, path='/api/nonpydantic400'), data='foo') as resp:
+          assert resp.status == 400
+          assert await resp.json() == {
+            'foo': 42,
+            'error': 'Bad Request',
+            'request_id': ANY,
+            'status_code': 400,
           }
       s.shutdown_event.set()
 

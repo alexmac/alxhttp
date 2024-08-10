@@ -2,6 +2,7 @@ from aiohttp.typedefs import Handler
 from aiohttp.web import Request, StreamResponse, middleware
 from aiohttp.web_exceptions import HTTPClientError, HTTPServerError
 
+from alxhttp.errors import HTTPBadRequest
 from alxhttp.json import json_error_response
 
 error_types = frozenset(
@@ -57,6 +58,8 @@ async def ensure_json_errors(request: Request, handler: Handler) -> StreamRespon
   """
   try:
     return await handler(request)
+  except HTTPBadRequest:
+    raise
   except (HTTPClientError, HTTPServerError) as e:
     if type(e).__name__ in error_types:
       # It's one of the native errors, not a subclass

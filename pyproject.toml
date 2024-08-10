@@ -13,7 +13,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alxhttp"
-version = "0.9.36"
+version = "0.9.37"
 authors = [{ name = "Alexander Macdonald", email = "alex@alexmac.cc" }]
 description = "A better base server for AioHTTP"
 readme = "README.md"
@@ -39,9 +39,10 @@ xray = ['aws-xray-sdk ~= 2.13']
 [tool.setuptools]
 packages = [
   "alxhttp",
-  "alxhttp.tests",
-  "alxhttp.pydantic",
   "alxhttp.middleware",
+  "alxhttp.pydantic",
+  "alxhttp.tests",
+  "alxhttp.typescript",
 ]
 
 [project.urls]

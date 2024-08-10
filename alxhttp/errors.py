@@ -17,7 +17,7 @@ class HTTPBadRequest(WebHTTPBadRequest):
     super().__init__(
       text=json_dumps(
         {
-          'error': 'HTTPBadRequest',
+          'error': 'Bad Request',
           'status_code': 400,
           'request_id': request_id,
         }

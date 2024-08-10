@@ -7,8 +7,9 @@ import asyncpg
 import pydantic
 from aiohttp.web import HTTPError, HTTPNotFound, HTTPSuccessful
 
-from alxhttp.pydantic.type_checks import TSEnum, is_dict, is_list, is_model_type, is_optional
 from alxhttp.req_id import get_request, get_request_id
+from alxhttp.typescript.type_checks import is_dict, is_list, is_model_type, is_optional, is_union_of_models
+from alxhttp.typescript.types import TSEnum
 
 
 def recursive_json_loads(type, data):
@@ -20,6 +21,15 @@ def recursive_json_loads(type, data):
   if is_optional(type):
     targs = typing.get_args(type)
     return recursive_json_loads(targs[0], data)
+
+  if is_union_of_models(type):
+    # TODO: stronger checking on the union models
+    if isinstance(data, str):
+      return json.loads(data)
+    elif isinstance(data, dict):
+      return data
+    else:
+      assert False
 
   if isinstance(data, str) and (is_dict(type) or is_list(type) or is_model_type(type)):
     return recursive_json_loads(type, json.loads(data))
