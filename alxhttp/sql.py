@@ -76,10 +76,15 @@ class SQLArgValidator[T: BaseModel, **P, PT](SQLValidator):
     """
     The kwargs could be in any order, so it's important that we re-order
     based on the defined field order from `argorder`
+
+    This also gives a natural place to perform some type conversions
     """
     ordered = []
-    for field_name in self.argorder.__fields__.keys():
-      ordered.append(kwargs[field_name])
+    for field_name in self.argorder.model_fields.keys():
+      arg = kwargs[field_name]
+      if isinstance(arg, BaseModel):
+        arg = arg.model_dump_json()
+      ordered.append(arg)
     return ordered
 
   async def fetchrow(self, conn: asyncpg.pool.PoolConnectionProxy, *args: P.args, **kwargs: P.kwargs) -> T:

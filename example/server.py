@@ -11,6 +11,7 @@ from aiohttp.typedefs import Middleware
 from aiohttp.web import HTTPBadRequest, HTTPInsufficientStorage, Request, Response, json_response
 
 from alxhttp.cookies import HiddenCookie, PlainCookie
+from alxhttp.errors import HTTPBadRequest as AlxHTTPBadRequest
 from alxhttp.file import get_file
 from alxhttp.pydantic.basemodel import BaseModel, Empty, ErrorModel
 from alxhttp.pydantic.request import Request as ModelReq
@@ -115,6 +116,10 @@ async def handler_test_custom_error_model(s: ExampleServer, req: Request) -> Res
   raise CustomErrorModel(some_id='foo').exception()
 
 
+async def handler_normal_400(s: ExampleServer, req: Request) -> Response:
+  raise AlxHTTPBadRequest({'foo': 42})
+
+
 class CustomSuccessfulModel(BaseModel):
   some_id: str
   something: int
@@ -164,6 +169,8 @@ class ExampleServer(Server):
 
     self.app.router.add_get(r'/api/license', get_file('LICENSE'))
 
+    self.app.router.add_get(r'/api/nonpydantic400', partial(handler_normal_400, self))
+
 
 @route('GET', '/api/empty', ts_name='overrideTsName', match_info=Empty, body=Empty, response=Empty)
 async def validated_empty_api(server: ExampleServer, request: ModelReq[Empty, Empty, Empty]) -> EmptyResponse:
@@ -196,4 +203,5 @@ async def main():  # pragma: nocover
 
 
 if __name__ == '__main__':  # pragma: nocover
+  asyncio.run(main())
   asyncio.run(main())
