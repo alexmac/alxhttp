@@ -1,4 +1,5 @@
 import inspect
+import json
 import os
 import time
 from pathlib import Path
@@ -84,6 +85,8 @@ class SQLArgValidator[T: BaseModel, **P, PT](SQLValidator):
       arg = kwargs[field_name]
       if isinstance(arg, BaseModel):
         arg = arg.model_dump_json()
+      elif isinstance(arg, dict):
+        arg = json.dumps(arg)
       ordered.append(arg)
     return ordered
 
