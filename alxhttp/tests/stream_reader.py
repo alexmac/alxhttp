@@ -27,7 +27,7 @@ class BytesStreamReader(StreamReader):
   # def is_eof(self):
   # def at_eof(self):
 
-  async def read(self, n: int = -1):
+  async def read(self, n: int = -1) -> bytes:
     if not self._data:
       return b''
 
@@ -40,10 +40,10 @@ class BytesStreamReader(StreamReader):
 
     return chunk
 
-  async def readany(self):
+  async def readany(self) -> bytes:
     return await self.read()
 
-  async def readline(self):
+  async def readline(self) -> bytes:
     newline_pos = self._data.find(b'\n')
     if newline_pos == -1:
       return await self.readany()
