@@ -5,11 +5,11 @@ export type WithDefaultsAndAnnotations = {
   fff: string;
 };
 
-export type Opt = { key: string; val: string | null };
+export type Opt = { key: string; val: null | string };
 
 export type User = {
   user_id: string;
-  name: string | null;
+  name: null | string;
   roles: [string];
   options: Record<string, Opt>;
   maybe_options: Record<string, Opt> | null;
@@ -17,7 +17,7 @@ export type User = {
     string,
     Record<string, Record<string, Record<string, Opt>>>
   >;
-  opt_union: number | string | null;
+  opt_union: null | number | string;
 };
 
 export type Org = {
