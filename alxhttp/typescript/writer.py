@@ -55,7 +55,7 @@ def run_prettier(path: pathlib.Path, should_raise: bool = True, opts: List[str] 
 
   try:
     # Construct the command
-    command = ['bun', 'x', 'prettier', '-w', str(path)] + opts
+    command = ['bun', 'x', 'prettier', '--ignore-path', '/dev/null', '-w', str(path)] + opts
 
     # Run the command
     r = subprocess.run(command, check=True, capture_output=True, text=True)

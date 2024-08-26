@@ -9,8 +9,10 @@ from typing import Annotated, Dict, List, Optional
 from pydantic import Field
 
 from alxhttp.pydantic.basemodel import BaseModel
+from alxhttp.pydantic.route import get_route_details
 from alxhttp.typescript.type_index import TypeIndex
-from alxhttp.typescript.writer import run_prettier
+from alxhttp.typescript.writer import gen_ts_for_route, run_prettier
+from example.sqlserver import create_org, delete_org, get_users_for_org_valid_args
 
 log = logging.getLogger()
 
@@ -97,3 +99,13 @@ class TestTS(unittest.IsolatedAsyncioTestCase):
     for t in [WithDefaultsAndAnnotations, Opt, User, Org]:
       ti.recurse_model(t, init_from_wire=True, init_to_wire=True)
     snapshot_compare(ti, snapshot)
+
+  async def test_route_wrappers(self):
+    routes = [
+      get_users_for_org_valid_args,
+      create_org,
+      delete_org,
+    ]
+    rds = [get_route_details(route) for route in routes]
+    for rd in rds:
+      gen_ts_for_route(rd, base_path='tests/snapshots', pretty=True)
