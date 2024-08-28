@@ -12,6 +12,11 @@ jobs:
         with:
           python-version: 3.12
 
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Launch Containers
         shell: bash
         run: |
