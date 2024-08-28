@@ -5,3 +5,4 @@ output
 .ruff_cache
 dist
 *.egg-info
+node_modules

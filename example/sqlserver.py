@@ -9,7 +9,7 @@ from asyncpg.pool import Pool
 
 from alxhttp.pydantic.basemodel import BaseModel, Empty
 from alxhttp.pydantic.request import Request
-from alxhttp.pydantic.response import Response
+from alxhttp.pydantic.response import EmptyResponse, Response
 from alxhttp.pydantic.route import add_route, route
 from alxhttp.schemas import prefixed_id
 from alxhttp.server import Server
@@ -117,6 +117,46 @@ async def get_org(server: ExampleServer, request: Request[MatchInfo, Empty, Empt
   return Response(body=orgs[0])
 
 
+class OrgData(BaseModel):
+  org_name: str
+
+
+CREATE_ORG = SQLArgValidator('sqlserver_create_org.sql', Org, OrgData)
+
+
+@route(
+  'POST',
+  '/api/orgs',
+  match_info=MatchInfo,
+  body=OrgData,
+  response=Org,
+)
+async def create_org(server: ExampleServer, request: Request[MatchInfo, OrgData, Empty]) -> Response[Org]:
+  async with server.pool.acquire() as conn:
+    org = await CREATE_ORG.fetchrow(conn, org_name=request.body.org_name)
+
+  return Response(body=org)
+
+
+class OrgDelete(BaseModel):
+  org_id: str
+
+
+DELETE_ORG = SQLArgValidator('sqlserver_delete_org.sql', Empty, OrgDelete)
+
+
+@route(
+  'DELETE',
+  '/api/orgs/{org_id}',
+  match_info=MatchInfo,
+)
+async def delete_org(server: ExampleServer, request: Request[MatchInfo, Empty, Empty]) -> EmptyResponse:
+  async with server.pool.acquire() as conn:
+    await DELETE_ORG.execute(conn, org_id=request.match_info.org_id)
+
+  return EmptyResponse()
+
+
 class OrgInvalid(BaseModel):
   org_id: OrgID
   # org_name: str - intentionally missing
@@ -173,6 +213,8 @@ async def main():  # pragma: nocover
   ) as pool:
     s = ExampleServer(pool)
 
+    add_route(s, s.app.router, create_org)
+    add_route(s, s.app.router, delete_org)
     add_route(s, s.app.router, get_org)
     add_route(s, s.app.router, get_users_for_org)
     add_route(s, s.app.router, get_users_for_org_list)

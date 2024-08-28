@@ -1,0 +1,39 @@
+{
+  "name": "alxhttp",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "dependencies": {
+    "@tanstack/react-query": "^5.52.2"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "prettier-plugin-organize-imports": "^3.2.4",
+    "prettier-plugin-tailwindcss": "^0.6.6",
+    "typescript": "^5.5.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 200,
+    "trailingComma": "all",
+    "arrowParens": "always",
+    "plugins": [
+      "prettier-plugin-organize-imports",
+      "prettier-plugin-tailwindcss"
+    ],
+    "tailwindAttributes": [
+      "class",
+      "className",
+      "ngClass",
+      ".*[cC]lassName"
+    ],
+    "tailwindFunctions": [
+      "clsx",
+      "cn"
+    ]
+  }
+}

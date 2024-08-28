@@ -40,7 +40,7 @@ def pytype_to_tstype(t: type) -> str:
       return pytype_to_tstype(targs[0])
   elif is_union(t):
     targs = typing.get_args(t)
-    return ' | '.join([pytype_to_tstype(targ) for targ in targs])
+    return ' | '.join(sorted([pytype_to_tstype(targ) for targ in targs]))
   elif is_list(t):
     return f'[{pytype_to_tstype(typing.get_args(t)[0])}]'
   elif is_dict(t):
