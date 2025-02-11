@@ -3,7 +3,7 @@ import typing
 
 from alxhttp.typescript.types import SAFE_PRIMITIVE_TYPES, SAFE_PRIMITIVE_TYPES_OR_NONE
 
-TypeType = type | types.UnionType | typing.Annotated
+TypeType = type | types.UnionType | typing.Annotated[typing.Any, typing.Any]
 
 
 def extract_type_param(t: TypeType) -> type:
