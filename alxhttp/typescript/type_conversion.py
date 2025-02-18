@@ -19,6 +19,8 @@ def pytype_to_tstype(t: type) -> str:
     return 'null'
   elif t is TSUndefined:
     return 'undefined'
+  elif t is typing.Any:
+    return 'any'
   elif is_literal(t):
     literal_value = get_literal(t)
     if isinstance(literal_value, str):

@@ -2,7 +2,7 @@ import typing
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Generator, List, Set, get_type_hints
+from typing import Any, Dict, Generator, List, Set, get_type_hints
 
 from pydantic import BaseModel, HttpUrl
 
@@ -154,6 +154,8 @@ class TypeIndex:
       return src_name
     elif type == datetime:
       return f'new Date({src_name} * 1000)'
+    elif type == Any:
+      return src_name
     elif is_annotated(type):
       return self._gen_init_field_assignment(type_args[0], src_name, depth)
     elif is_list(type):
@@ -210,6 +212,8 @@ class TypeIndex:
       return src_name
     elif type == datetime:
       return f'{src_name}.getTime()'
+    elif type == Any:
+      return src_name
     elif is_annotated(type):
       return self._gen_uninit_field_assignment(type_args[0], src_name, depth)
     elif is_list(type):
