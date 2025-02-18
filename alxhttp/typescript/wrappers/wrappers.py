@@ -132,7 +132,7 @@ def gen_enums(rd: RouteDetails, ti: TypeIndex, out: TextIO):
       ]
     )
   )
-  out.write(f'type ResponseErrors = ErrorModel | {join([extract_class(e) for e in error_types], sep = '|')};\n\n')
+  out.write(f'export type ResponseErrors = ErrorModel | {join([extract_class(e) for e in error_types], sep = '|')};\n\n')
 
   out.write(jsdoc(['When all else fails this error is thrown']))
   out.write('const RequestError = { error: ErrorCode.RequestError, status_code: -1, request_id: null};\n\n')
