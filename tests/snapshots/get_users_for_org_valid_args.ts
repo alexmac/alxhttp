@@ -35,7 +35,7 @@ enum ErrorCode {
  * url: /api/orgs/{org_id}/users/valid_args
  *
  */
-type ResponseErrors = ErrorModel | ErrorModel | PydanticValidationError
+export type ResponseErrors = ErrorModel | ErrorModel | PydanticValidationError
 
 /**
  * When all else fails this error is thrown
@@ -198,6 +198,6 @@ export function useGetUsersForOrgValidArgs(args: HookArgs): UseQueryResult<OrgUs
       assertVal(org_id)
       return await getUsersForOrgValidArgs({ org_id })
     },
-    enabled: true && !!org_id,
+    enabled: org_id !== null && org_id !== undefined && org_id !== '',
   })
 }

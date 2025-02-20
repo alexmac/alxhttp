@@ -31,7 +31,7 @@ def gen_usequery_wrapper(rd: RouteDetails[ErrorType], argtype_fields: List[str],
                 ]
               ),
             ),
-            ('enabled', join(['true'] + [f'!!{x}' for x in argtype_fields], sep=' && ')),
+            ('enabled', join([f'{x} !== null && {x} !== undefined && {x} !== ""' for x in argtype_fields], sep=' && ')),
           ]
         )
       )
@@ -132,7 +132,7 @@ def gen_enums(rd: RouteDetails, ti: TypeIndex, out: TextIO):
       ]
     )
   )
-  out.write(f'export type ResponseErrors = ErrorModel | {join([extract_class(e) for e in error_types], sep = '|')};\n\n')
+  out.write(f'export type ResponseErrors = ErrorModel | {join([extract_class(e) for e in error_types], sep="|")};\n\n')
 
   out.write(jsdoc(['When all else fails this error is thrown']))
   out.write('const RequestError = { error: ErrorCode.RequestError, status_code: -1, request_id: null};\n\n')

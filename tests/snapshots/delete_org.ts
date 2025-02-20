@@ -35,7 +35,7 @@ enum ErrorCode {
  * url: /api/orgs/{org_id}
  *
  */
-type ResponseErrors = ErrorModel | ErrorModel | PydanticValidationError
+export type ResponseErrors = ErrorModel | ErrorModel | PydanticValidationError
 
 /**
  * When all else fails this error is thrown

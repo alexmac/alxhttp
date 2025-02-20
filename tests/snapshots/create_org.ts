@@ -35,7 +35,7 @@ enum ErrorCode {
  * url: /api/orgs
  *
  */
-type ResponseErrors = ErrorModel | ErrorModel | PydanticValidationError
+export type ResponseErrors = ErrorModel | ErrorModel | PydanticValidationError
 
 /**
  * When all else fails this error is thrown
@@ -188,6 +188,6 @@ export function useCreateOrg(args: HookArgs): UseQueryResult<Org, ResponseErrors
       assertVal(org_name)
       return await createOrg({ org_id, org_name })
     },
-    enabled: true && !!org_id && !!org_name,
+    enabled: org_id !== null && org_id !== undefined && org_id !== '' && org_name !== null && org_name !== undefined && org_name !== '',
   })
 }
