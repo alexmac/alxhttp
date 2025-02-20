@@ -31,7 +31,7 @@ def gen_usequery_wrapper(rd: RouteDetails[ErrorType], argtype_fields: List[str],
                 ]
               ),
             ),
-            ('enabled', join([f'{x} !== null && {x} !== undefined && {x} !== ""' for x in argtype_fields], sep=' && ')),
+            ('enabled', join(['true'] + [f'{x} !== null && {x} !== undefined && {x} !== ""' for x in argtype_fields], sep=' && ')),
           ]
         )
       )
