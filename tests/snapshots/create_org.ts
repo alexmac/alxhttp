@@ -177,7 +177,7 @@ export function useCreateOrgMutation(args: HookArgs, invalidateQueryKey: QueryKe
  * @returns {Org}
  *
  */
-export function useCreateOrg(args: HookArgs): UseQueryResult<Org, ResponseErrors> {
+export function useCreateOrg(args: HookArgs, enabled: boolean = true): UseQueryResult<Org, ResponseErrors> {
   const { org_id, org_name } = args
 
   return useQuery({
@@ -188,6 +188,6 @@ export function useCreateOrg(args: HookArgs): UseQueryResult<Org, ResponseErrors
       assertVal(org_name)
       return await createOrg({ org_id, org_name })
     },
-    enabled: org_id !== null && org_id !== undefined && org_id !== '' && org_name !== null && org_name !== undefined && org_name !== '',
+    enabled: enabled,
   })
 }

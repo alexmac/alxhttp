@@ -188,7 +188,7 @@ export async function getUsersForOrgValidArgs(args: ArgType, base_url: string = 
  * @returns {OrgUsers}
  *
  */
-export function useGetUsersForOrgValidArgs(args: HookArgs): UseQueryResult<OrgUsers, ResponseErrors> {
+export function useGetUsersForOrgValidArgs(args: HookArgs, enabled: boolean = true): UseQueryResult<OrgUsers, ResponseErrors> {
   const { org_id } = args
 
   return useQuery({
@@ -198,6 +198,6 @@ export function useGetUsersForOrgValidArgs(args: HookArgs): UseQueryResult<OrgUs
       assertVal(org_id)
       return await getUsersForOrgValidArgs({ org_id })
     },
-    enabled: org_id !== null && org_id !== undefined && org_id !== '',
+    enabled: enabled,
   })
 }

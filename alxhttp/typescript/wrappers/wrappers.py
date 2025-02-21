@@ -31,7 +31,7 @@ def gen_usequery_wrapper(rd: RouteDetails[ErrorType], argtype_fields: List[str],
                 ]
               ),
             ),
-            ('enabled', join(['true'] + [f'{x} !== null && {x} !== undefined && {x} !== ""' for x in argtype_fields], sep=' && ')),
+            ('enabled', 'enabled'),
           ]
         )
       )
@@ -43,7 +43,7 @@ def gen_usequery_wrapper(rd: RouteDetails[ErrorType], argtype_fields: List[str],
     is_async=False,
     is_export=True,
     return_decl=f'UseQueryResult<{response_type_name}, ResponseErrors>',
-    arguments=[Arg('args', 'HookArgs')],
+    arguments=[Arg('args', 'HookArgs'), Arg('enabled', 'boolean', default_value='true')],
     statements=stmts,
   )
 
