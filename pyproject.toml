@@ -13,7 +13,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alxhttp"
-version = "0.9.46"
+version = "0.9.53"
 authors = [{ name = "Alexander Macdonald", email = "alex@alexmac.cc" }]
 description = "A better base server for AioHTTP"
 readme = "README.md"
@@ -28,7 +28,7 @@ dependencies = [
   'pydantic ~= 2.7',
   'asyncpg ~= 0.29',
   'pyhumps ~= 3.8',
-  'pglast ~= 6.2',
+  'pglast ~= 7.7',
   'redis ~= 5.0',
   'types-redis ~= 4.0',
   'watchdog ~=4.0',

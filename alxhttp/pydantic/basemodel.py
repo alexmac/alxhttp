@@ -60,6 +60,18 @@ def recursive_json_loads(type, data):
 BaseModelType = TypeVar('BaseModelType', bound='BaseModel')
 
 
+def replace_datetime_values_with_timestamps(value: Dict | List) -> Dict | List:
+  if isinstance(value, dict):
+    for k, v in value.items():
+      if isinstance(v, datetime):
+        value[k] = v.timestamp()
+      elif isinstance(v, dict) or isinstance(v, list):
+        value[k] = replace_datetime_values_with_timestamps(v)
+  elif isinstance(value, list):
+    value = [replace_datetime_values_with_timestamps(v) for v in value]
+  return value
+
+
 class BaseModel(pydantic.BaseModel):
   """
   A Pydantic model with some opinions:
@@ -73,6 +85,8 @@ class BaseModel(pydantic.BaseModel):
   def datetimes_as_timestamps(self, value: Any, nxt: pydantic.SerializerFunctionWrapHandler) -> Any:
     if isinstance(value, datetime):
       return value.timestamp()
+    elif isinstance(value, dict) or isinstance(value, list):
+      return replace_datetime_values_with_timestamps(value)
     else:
       return nxt(value)
 

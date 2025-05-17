@@ -2,24 +2,24 @@ import types
 import typing
 from datetime import datetime
 
-from alxhttp.typescript.type_checks import extract_class, get_literal, is_annotated, is_dict, is_list, is_literal, is_model_type, is_union
+from alxhttp.typescript.type_checks import extract_class, get_literal, is_annotated, is_dict, is_list, is_literal, is_model_type, is_type_or_alias, is_union
 from alxhttp.typescript.types import SAFE_PRIMITIVE_TYPES, TSEnum, TSRaw, TSUndefined
 
 
 def pytype_to_tstype(t: type) -> str:
-  if t is str:
+  if is_type_or_alias(t, str):
     return 'string'
-  elif t is bool:
+  elif is_type_or_alias(t, bool):
     return 'boolean'
-  elif t is int or t is float:
+  elif is_type_or_alias(t, int) or is_type_or_alias(t, float):
     return 'number'
-  elif t is datetime:
+  elif is_type_or_alias(t, datetime):
     return 'Date'
-  elif t is types.NoneType:
+  elif is_type_or_alias(t, types.NoneType):
     return 'null'
-  elif t is TSUndefined:
+  elif is_type_or_alias(t, TSUndefined):
     return 'undefined'
-  elif t is typing.Any:
+  elif is_type_or_alias(t, typing.Any):
     return 'any'
   elif is_literal(t):
     literal_value = get_literal(t)
@@ -44,7 +44,7 @@ def pytype_to_tstype(t: type) -> str:
     targs = typing.get_args(t)
     return ' | '.join(sorted([pytype_to_tstype(targ) for targ in targs]))
   elif is_list(t):
-    return f'[{pytype_to_tstype(typing.get_args(t)[0])}]'
+    return f'({pytype_to_tstype(typing.get_args(t)[0])})[]'
   elif is_dict(t):
     k_type, v_type = typing.get_args(t)
     return f'Record<{pytype_to_tstype(k_type)}, {pytype_to_tstype(v_type)}>'

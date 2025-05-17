@@ -25,13 +25,12 @@ def gen_usequery_wrapper(rd: RouteDetails[ErrorType], argtype_fields: List[str],
               'queryFn',
               'async () => '
               + braces(
-                [f'assertVal({x})' for x in argtype_fields]
-                + [
-                  f'return await {rd.ts_name}({{ {join(argtype_fields, sep=", ")} }})',
-                ]
+                # [f'assertVal({x})' for x in argtype_fields] + # TODO: add this back in with a check on the nullability of the arg
+                [f'return await {rd.ts_name}({{ {join(argtype_fields, sep=", ")} }})']
               ),
             ),
             ('enabled', 'enabled'),
+            ('placeholderData', 'keepPreviousData'),
           ]
         )
       )
@@ -105,14 +104,14 @@ def gen_mutation_wrapper(rd: RouteDetails[ErrorType], argtype_fields: List[str],
 def gen_reader_imports(out: TextIO):
   out.write(file_header())
   out.write("import { ClientLoaderFunctionArgs } from '@remix-run/react'\n")
-  out.write("import { useQuery, UseQueryResult } from '@tanstack/react-query'\n\n")
+  out.write("import { useQuery, UseQueryResult, keepPreviousData } from '@tanstack/react-query'\n\n")
   out.write(shared_defs())
 
 
 def gen_writer_imports(out: TextIO):
   out.write(file_header())
   out.write("import { ClientActionFunctionArgs } from '@remix-run/react'\n\n")
-  out.write("import { useMutation, UseMutationResult, useQuery, UseQueryResult, useQueryClient } from '@tanstack/react-query'\n")
+  out.write("import { useMutation, UseMutationResult, useQuery, UseQueryResult, useQueryClient, keepPreviousData } from '@tanstack/react-query'\n")
   out.write(shared_defs())
 
 

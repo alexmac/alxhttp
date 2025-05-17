@@ -10,7 +10,7 @@ export type Opt = { key: string; val: null | string };
 export type User = {
   user_id: string;
   name: null | string;
-  roles: [string];
+  roles: string[];
   options: Record<string, Opt>;
   maybe_options: Record<string, Opt> | null;
   deep_opts: Record<
@@ -23,9 +23,13 @@ export type User = {
 export type Org = {
   org_id: string;
   created_at: Date;
-  users: [User];
-  maybe_users: [User] | null;
+  users: User[];
+  maybe_users: User[] | null;
 };
+
+export type RecursiveType = { child: RecursiveType | null };
+
+export type DoubleDict = { foo: Record<string, Record<string, any>> };
 
 function getWithDefaultsAndAnnotationsFromWire(
   root: any
@@ -111,6 +115,31 @@ function getOrgFromWire(root: any): Org {
         : root.maybe_users.map((v2: User) => {
             return getUserFromWire(v2);
           }),
+  };
+}
+
+function getRecursiveTypeFromWire(root: any): RecursiveType {
+  return {
+    child: root.child === null ? null : getRecursiveTypeFromWire(root.child),
+  };
+}
+
+function getDoubleDictFromWire(root: any): DoubleDict {
+  return {
+    foo: Object.fromEntries(
+      Object.entries(root.foo as Record<string, Record<string, any>>).map(
+        ([k1, v1]) => {
+          return [
+            k1,
+            Object.fromEntries(
+              Object.entries(v1 as Record<string, any>).map(([k2, v2]) => {
+                return [k2, v2];
+              })
+            ),
+          ];
+        }
+      )
+    ),
   };
 }
 
@@ -200,5 +229,30 @@ function convertOrgToWire(root: any): Org {
         : root.maybe_users.map((v2: User) => {
             return convertUserToWire(v2);
           }),
+  };
+}
+
+function convertRecursiveTypeToWire(root: any): RecursiveType {
+  return {
+    child: root.child === null ? null : convertRecursiveTypeToWire(root.child),
+  };
+}
+
+function convertDoubleDictToWire(root: any): DoubleDict {
+  return {
+    foo: Object.fromEntries(
+      Object.entries(root.foo as Record<string, Record<string, any>>).map(
+        ([k1, v1]) => {
+          return [
+            k1,
+            Object.fromEntries(
+              Object.entries(v1 as Record<string, any>).map(([k2, v2]) => {
+                return [k2, v2];
+              })
+            ),
+          ];
+        }
+      )
+    ),
   };
 }

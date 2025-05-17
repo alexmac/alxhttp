@@ -65,6 +65,8 @@ def route(
       vr = await Request[match_info, body, query].from_request(request)
       return await func(server, vr, *args, **kwargs)
 
+    assert name == name.strip()
+
     setattr(wrapper, '_alxhttp_route_name', name)
     setattr(wrapper, '_alxhttp_route_verb', verb)
     setattr(wrapper, '_alxhttp_match_info', match_info)

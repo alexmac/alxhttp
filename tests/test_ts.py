@@ -4,7 +4,7 @@ import pathlib
 import tempfile
 import unittest
 from datetime import datetime
-from typing import Annotated, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 from pydantic import Field
 
@@ -48,6 +48,17 @@ class Org(BaseModel):
   created_at: datetime
   users: List[User]
   maybe_users: Optional[List[User]]
+
+
+class RecursiveType(BaseModel):
+  child: 'RecursiveType|None'
+
+
+type SomeID = str
+
+
+class DoubleDict(BaseModel):
+  foo: Dict[SomeID, Dict[str, Any]]
 
 
 cur_dir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
@@ -96,7 +107,7 @@ class TestTS(unittest.IsolatedAsyncioTestCase):
   async def test_ts_types(self):
     snapshot = cur_dir / 'test_ts.snapshot.ts'
     ti = TypeIndex()
-    for t in [WithDefaultsAndAnnotations, Opt, User, Org]:
+    for t in [WithDefaultsAndAnnotations, Opt, User, Org, RecursiveType, DoubleDict]:
       ti.recurse_model(t, init_from_wire=True, init_to_wire=True)
     snapshot_compare(ti, snapshot)
 

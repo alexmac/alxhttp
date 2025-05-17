@@ -49,9 +49,9 @@ export type Empty = Record<string, unknown>
 
 export type ErrorModel = { error: string; status_code: number; request_id: null | string }
 
-export type PydanticValidationError = { error: ErrorCode.PydanticValidationError; status_code: number; request_id: null | string; errors: [PydanticErrorDetails] }
+export type PydanticValidationError = { error: ErrorCode.PydanticValidationError; status_code: number; request_id: null | string; errors: PydanticErrorDetails[] }
 
-export type PydanticErrorDetails = { type: string; loc: [number | string]; msg: string; input: string; ctx: Record<string, string> | null }
+export type PydanticErrorDetails = { type: string; loc: (number | string)[]; msg: string; input: string; ctx: Record<string, string> | null }
 
 type ArgType = MatchInfo & Empty
 

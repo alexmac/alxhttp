@@ -87,16 +87,23 @@ def gen_wire_func(name: str, ret_type: str, object_init: ObjectInit):
   return f'function {name}(root: any): {ret_type} {{ return {object_init} }};\n'
 
 
-def recurse_model_types(t: type) -> Generator[type, None, None]:
+def recurse_model_types(t: type, seen: Set[type] | None = None) -> Generator[type, None, None]:
+  if seen is None:
+    seen = set()
+
+  if t in seen:
+    return
+  seen.add(t)
+
   if is_generic_type(t):
     for arg in typing.get_args(t):
-      yield from recurse_model_types(arg)
+      yield from recurse_model_types(arg, seen)
   elif is_model_type(t):
     yield t
 
     model_fields = get_type_hints(t)
     for _, field_type in model_fields.items():
-      yield from recurse_model_types(field_type)
+      yield from recurse_model_types(field_type, seen)
 
 
 @dataclass
@@ -115,9 +122,7 @@ class TypeIndex:
   def gen_enum_defs(self) -> str:
     tdefs = []
     for ename, evals in self.enum_refs.items():
-      tdefs.append(f'enum {ename} {braces([
-        f"{ev} = '{ev}'" for ev in sorted(evals)
-      ], sep=',')};')
+      tdefs.append(f'enum {ename} {braces([f"{ev} = '{ev}'" for ev in sorted(evals)], sep=",")};')
     return '\n\n'.join(tdefs) + '\n\n'
 
   def body_and_match_field_names(self, rd: RouteDetails) -> List[str]:
@@ -243,7 +248,7 @@ class TypeIndex:
       # This case represents a complex union i.e "str | datetime"
       assert False
     elif is_dict(type):
-      assert type_args[0] is str
+      assert is_type_or_annotated_type(type_args[0], str)
       ktype = pytype_to_tstype(type_args[0])
       vtype = pytype_to_tstype(type_args[1])
       return f'Object.fromEntries(Object.entries({src_name} as Record<{ktype}, {vtype}>).map(([{kn}, {vn}]) => {{ return [{kn}, {self._gen_uninit_field_assignment(type_args[1], vn, depth)}] }} ))'

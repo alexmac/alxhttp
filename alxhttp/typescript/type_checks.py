@@ -29,6 +29,10 @@ def is_union(t: TypeType) -> bool:
   return typing.get_origin(t) in {typing.Union, types.UnionType}
 
 
+def is_alias(t: TypeType) -> bool:
+  return isinstance(t, typing.TypeAliasType)
+
+
 def is_optional(t: TypeType) -> bool:
   return is_union(t) and typing.get_args(t)[1] == types.NoneType and len(typing.get_args(t)) == 2
 
@@ -37,8 +41,12 @@ def is_annotated(t: TypeType) -> bool:
   return typing.get_origin(t) in {typing.Annotated}
 
 
+def is_type_or_alias(t: TypeType, ta: TypeType):
+  return t is ta or (is_alias(t) and t.__value__ == ta)
+
+
 def is_type_or_annotated_type(t: TypeType, ta: TypeType):
-  return t == ta or (is_annotated(t) and typing.get_args(t)[0] == ta)
+  return t == ta or (is_annotated(t) and typing.get_args(t)[0] == ta) or (is_alias(t) and t.__value__ == ta)
 
 
 def is_literal(t: TypeType) -> bool:
