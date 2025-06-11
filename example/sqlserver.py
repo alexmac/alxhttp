@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from datetime import datetime
-from typing import Annotated, Dict, List, Optional
+from typing import Annotated, Dict, List, Literal, Optional
 
 from aiohttp.typedefs import Middleware
 from asyncpg import create_pool
@@ -136,6 +136,38 @@ async def create_org(server: ExampleServer, request: Request[MatchInfo, OrgData,
     org = await CREATE_ORG.fetchrow(conn, org_name=request.body.org_name)
 
   return Response(body=org)
+
+
+class BasicOrgData(BaseModel):
+  org_type: Literal['basic']
+  prop_1: str
+  prop_2: int
+
+
+class AdvancedOrgData(BaseModel):
+  org_type: Literal['advanced']
+  prop_1: str
+  prop_2: int
+  prop_3: float
+
+
+type OrgDataTypes = BasicOrgData | AdvancedOrgData
+
+
+class AdvancedBody(BaseModel):
+  req_id: str
+  org_data: OrgDataTypes
+
+
+@route(
+  'POST',
+  '/api/orgs2',
+  match_info=MatchInfo,
+  body=AdvancedBody,
+  response=Org,
+)
+async def create_org_2(server: ExampleServer, request: Request[MatchInfo, AdvancedBody, Empty]) -> Response[Org]:
+  raise NotImplementedError()
 
 
 class OrgDelete(BaseModel):

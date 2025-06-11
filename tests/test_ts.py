@@ -4,7 +4,7 @@ import pathlib
 import tempfile
 import unittest
 from datetime import datetime
-from typing import Annotated, Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Literal, Optional
 
 from pydantic import Field
 
@@ -12,7 +12,7 @@ from alxhttp.pydantic.basemodel import BaseModel
 from alxhttp.pydantic.route import get_route_details
 from alxhttp.typescript.type_index import TypeIndex
 from alxhttp.typescript.writer import gen_ts_for_route, run_prettier
-from example.sqlserver import create_org, delete_org, get_users_for_org_valid_args
+from example.sqlserver import create_org, create_org_2, delete_org, get_users_for_org_valid_args
 
 log = logging.getLogger()
 
@@ -61,6 +61,28 @@ class DoubleDict(BaseModel):
   foo: Dict[SomeID, Dict[str, Any]]
 
 
+class Mem1(BaseModel):
+  service_id: Literal['mem1']
+  service_name: str
+
+
+class Mem2(BaseModel):
+  service_id: Literal['mem2']
+  foo: str
+
+
+class Mem3(BaseModel):
+  service_id: str
+  foo: str
+
+
+type ResourceCardData = Mem1 | Mem2 | Mem3
+
+
+class Holder(BaseModel):
+  data: ResourceCardData
+
+
 cur_dir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -107,7 +129,7 @@ class TestTS(unittest.IsolatedAsyncioTestCase):
   async def test_ts_types(self):
     snapshot = cur_dir / 'test_ts.snapshot.ts'
     ti = TypeIndex()
-    for t in [WithDefaultsAndAnnotations, Opt, User, Org, RecursiveType, DoubleDict]:
+    for t in [WithDefaultsAndAnnotations, Opt, User, Org, RecursiveType, DoubleDict, Holder]:
       ti.recurse_model(t, init_from_wire=True, init_to_wire=True)
     snapshot_compare(ti, snapshot)
 
@@ -116,6 +138,7 @@ class TestTS(unittest.IsolatedAsyncioTestCase):
       get_users_for_org_valid_args,
       create_org,
       delete_org,
+      create_org_2,
     ]
     rds = [get_route_details(route) for route in routes]
     for rd in rds:

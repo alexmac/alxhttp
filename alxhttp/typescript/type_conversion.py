@@ -2,7 +2,7 @@ import types
 import typing
 from datetime import datetime
 
-from alxhttp.typescript.type_checks import extract_class, get_literal, is_annotated, is_dict, is_list, is_literal, is_model_type, is_type_or_alias, is_union
+from alxhttp.typescript.type_checks import extract_class, get_literal, is_alias, is_annotated, is_dict, is_list, is_literal, is_model_type, is_type_or_alias, is_union
 from alxhttp.typescript.types import SAFE_PRIMITIVE_TYPES, TSEnum, TSRaw, TSUndefined
 
 
@@ -26,6 +26,8 @@ def pytype_to_tstype(t: type) -> str:
     if isinstance(literal_value, str):
       return f"'{literal_value}'"
     return str(literal_value)
+  elif is_alias(t):
+    return pytype_to_tstype(t.__value__)
   elif is_annotated(t):
     targs = typing.get_args(t)
     if targs[0] in SAFE_PRIMITIVE_TYPES:

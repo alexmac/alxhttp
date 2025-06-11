@@ -31,17 +31,25 @@ export type RecursiveType = { child: RecursiveType | null };
 
 export type DoubleDict = { foo: Record<string, Record<string, any>> };
 
-function getWithDefaultsAndAnnotationsFromWire(
+export type Holder = { data: Mem1 | Mem2 | Mem3 };
+
+export type Mem1 = { service_id: "mem1"; service_name: string };
+
+export type Mem2 = { service_id: "mem2"; foo: string };
+
+export type Mem3 = { service_id: string; foo: string };
+
+export function getWithDefaultsAndAnnotationsFromWire(
   root: any
 ): WithDefaultsAndAnnotations {
   return { foo: root.foo, val: root.val, blah: root.blah, fff: root.fff };
 }
 
-function getOptFromWire(root: any): Opt {
+export function getOptFromWire(root: any): Opt {
   return { key: root.key, val: root.val };
 }
 
-function getUserFromWire(root: any): User {
+export function getUserFromWire(root: any): User {
   return {
     user_id: root.user_id,
     name: root.name,
@@ -102,7 +110,7 @@ function getUserFromWire(root: any): User {
   };
 }
 
-function getOrgFromWire(root: any): Org {
+export function getOrgFromWire(root: any): Org {
   return {
     org_id: root.org_id,
     created_at: new Date(root.created_at * 1000),
@@ -118,13 +126,13 @@ function getOrgFromWire(root: any): Org {
   };
 }
 
-function getRecursiveTypeFromWire(root: any): RecursiveType {
+export function getRecursiveTypeFromWire(root: any): RecursiveType {
   return {
     child: root.child === null ? null : getRecursiveTypeFromWire(root.child),
   };
 }
 
-function getDoubleDictFromWire(root: any): DoubleDict {
+export function getDoubleDictFromWire(root: any): DoubleDict {
   return {
     foo: Object.fromEntries(
       Object.entries(root.foo as Record<string, Record<string, any>>).map(
@@ -143,17 +151,40 @@ function getDoubleDictFromWire(root: any): DoubleDict {
   };
 }
 
-function convertWithDefaultsAndAnnotationsToWire(
+export function getHolderFromWire(root: any): Holder {
+  return {
+    data:
+      root.data.service_id === "mem1"
+        ? getMem1FromWire(root.data)
+        : root.data.service_id === "mem2"
+          ? getMem2FromWire(root.data)
+          : getMem3FromWire(root.data),
+  };
+}
+
+export function getMem1FromWire(root: any): Mem1 {
+  return { service_id: root.service_id, service_name: root.service_name };
+}
+
+export function getMem2FromWire(root: any): Mem2 {
+  return { service_id: root.service_id, foo: root.foo };
+}
+
+export function getMem3FromWire(root: any): Mem3 {
+  return { service_id: root.service_id, foo: root.foo };
+}
+
+export function convertWithDefaultsAndAnnotationsToWire(
   root: any
 ): WithDefaultsAndAnnotations {
   return { foo: root.foo, val: root.val, blah: root.blah, fff: root.fff };
 }
 
-function convertOptToWire(root: any): Opt {
+export function convertOptToWire(root: any): Opt {
   return { key: root.key, val: root.val };
 }
 
-function convertUserToWire(root: any): User {
+export function convertUserToWire(root: any): User {
   return {
     user_id: root.user_id,
     name: root.name,
@@ -216,7 +247,7 @@ function convertUserToWire(root: any): User {
   };
 }
 
-function convertOrgToWire(root: any): Org {
+export function convertOrgToWire(root: any): Org {
   return {
     org_id: root.org_id,
     created_at: root.created_at.getTime(),
@@ -232,13 +263,13 @@ function convertOrgToWire(root: any): Org {
   };
 }
 
-function convertRecursiveTypeToWire(root: any): RecursiveType {
+export function convertRecursiveTypeToWire(root: any): RecursiveType {
   return {
     child: root.child === null ? null : convertRecursiveTypeToWire(root.child),
   };
 }
 
-function convertDoubleDictToWire(root: any): DoubleDict {
+export function convertDoubleDictToWire(root: any): DoubleDict {
   return {
     foo: Object.fromEntries(
       Object.entries(root.foo as Record<string, Record<string, any>>).map(
@@ -255,4 +286,27 @@ function convertDoubleDictToWire(root: any): DoubleDict {
       )
     ),
   };
+}
+
+export function convertHolderToWire(root: any): Holder {
+  return {
+    data:
+      root.data.service_id === "mem1"
+        ? convertMem1ToWire(root.data)
+        : root.data.service_id === "mem2"
+          ? convertMem2ToWire(root.data)
+          : convertMem3ToWire(root.data),
+  };
+}
+
+export function convertMem1ToWire(root: any): Mem1 {
+  return { service_id: root.service_id, service_name: root.service_name };
+}
+
+export function convertMem2ToWire(root: any): Mem2 {
+  return { service_id: root.service_id, foo: root.foo };
+}
+
+export function convertMem3ToWire(root: any): Mem3 {
+  return { service_id: root.service_id, foo: root.foo };
 }

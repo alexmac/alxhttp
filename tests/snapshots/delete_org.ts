@@ -57,15 +57,15 @@ type ArgType = MatchInfo & Empty
 
 type HookArgs = { org_id: null | string | undefined }
 
-function getEmptyFromWire(root: any): Empty {
+export function getEmptyFromWire(root: any): Empty {
   return {}
 }
 
-function getErrorModelFromWire(root: any): ErrorModel {
+export function getErrorModelFromWire(root: any): ErrorModel {
   return { error: root.error, status_code: root.status_code, request_id: root.request_id }
 }
 
-function getPydanticValidationErrorFromWire(root: any): PydanticValidationError {
+export function getPydanticValidationErrorFromWire(root: any): PydanticValidationError {
   return {
     error: root.error,
     status_code: root.status_code,
@@ -76,7 +76,7 @@ function getPydanticValidationErrorFromWire(root: any): PydanticValidationError 
   }
 }
 
-function getPydanticErrorDetailsFromWire(root: any): PydanticErrorDetails {
+export function getPydanticErrorDetailsFromWire(root: any): PydanticErrorDetails {
   return {
     type: root.type,
     loc: root.loc,
@@ -93,7 +93,7 @@ function getPydanticErrorDetailsFromWire(root: any): PydanticErrorDetails {
   }
 }
 
-function convertEmptyToWire(root: any): Empty {
+export function convertEmptyToWire(root: any): Empty {
   return {}
 }
 

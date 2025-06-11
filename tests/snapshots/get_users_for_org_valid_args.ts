@@ -74,7 +74,7 @@ type ArgType = MatchInfo & Empty
 
 type HookArgs = { org_id: null | string | undefined }
 
-function getOrgUsersFromWire(root: any): OrgUsers {
+export function getOrgUsersFromWire(root: any): OrgUsers {
   return {
     org_id: root.org_id,
     users: Object.fromEntries(
@@ -85,7 +85,7 @@ function getOrgUsersFromWire(root: any): OrgUsers {
   }
 }
 
-function getUsersWithRolesFromWire(root: any): UsersWithRoles {
+export function getUsersWithRolesFromWire(root: any): UsersWithRoles {
   return {
     user_id: root.user_id,
     created_at: new Date(root.created_at * 1000),
@@ -95,7 +95,7 @@ function getUsersWithRolesFromWire(root: any): UsersWithRoles {
   }
 }
 
-function getGoogleAccountFromWire(root: any): GoogleAccount {
+export function getGoogleAccountFromWire(root: any): GoogleAccount {
   return {
     sub: root.sub,
     email: root.email,
@@ -110,11 +110,11 @@ function getGoogleAccountFromWire(root: any): GoogleAccount {
   }
 }
 
-function getErrorModelFromWire(root: any): ErrorModel {
+export function getErrorModelFromWire(root: any): ErrorModel {
   return { error: root.error, status_code: root.status_code, request_id: root.request_id }
 }
 
-function getPydanticValidationErrorFromWire(root: any): PydanticValidationError {
+export function getPydanticValidationErrorFromWire(root: any): PydanticValidationError {
   return {
     error: root.error,
     status_code: root.status_code,
@@ -125,7 +125,7 @@ function getPydanticValidationErrorFromWire(root: any): PydanticValidationError 
   }
 }
 
-function getPydanticErrorDetailsFromWire(root: any): PydanticErrorDetails {
+export function getPydanticErrorDetailsFromWire(root: any): PydanticErrorDetails {
   return {
     type: root.type,
     loc: root.loc,

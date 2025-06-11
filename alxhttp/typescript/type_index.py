@@ -12,6 +12,7 @@ from alxhttp.typescript.syntax_tree import ObjectInit, ObjectInitField, ObjectTy
 from alxhttp.typescript.type_checks import (
   extract_class,
   get_literal,
+  is_alias,
   is_annotated,
   is_dict,
   is_generic_type,
@@ -84,7 +85,7 @@ def extract_enum_references(enum: Dict[str, Set[str]], model) -> None:
 
 
 def gen_wire_func(name: str, ret_type: str, object_init: ObjectInit):
-  return f'function {name}(root: any): {ret_type} {{ return {object_init} }};\n'
+  return f'export function {name}(root: any): {ret_type} {{ return {object_init} }};\n'
 
 
 def recurse_model_types(t: type, seen: Set[type] | None = None) -> Generator[type, None, None]:
@@ -94,6 +95,9 @@ def recurse_model_types(t: type, seen: Set[type] | None = None) -> Generator[typ
   if t in seen:
     return
   seen.add(t)
+
+  if is_alias(t):
+    yield from recurse_model_types(t.__value__, seen)
 
   if is_generic_type(t):
     for arg in typing.get_args(t):
@@ -163,6 +167,8 @@ class TypeIndex:
       return src_name
     elif is_annotated(type):
       return self._gen_init_field_assignment(type_args[0], src_name, depth)
+    elif is_alias(type):
+      return self._gen_init_field_assignment(type.__value__, src_name, depth)
     elif is_list(type):
       if is_safe_primitive_type_or_union(type_args[0]):
         # Small optimization
@@ -176,19 +182,24 @@ class TypeIndex:
     elif is_union_of_models(type):
       discrimination_expr = ''
       first_first_name = None
-      for subtype in type_args:
+      finished = False
+      for n, subtype in enumerate(type_args):
         first_name, first_field_type = list(get_type_hints(subtype).items())[0]
         if not first_first_name:
           first_first_name = first_name
         assert first_name == first_first_name  # simplifying assumption: all subtypes will have a common first literal key
-        assert is_literal(first_field_type)
-        literal_value = get_literal(first_field_type)
-        if isinstance(literal_value, str):
-          literal_value = f"'{literal_value}'"
+        if is_literal(first_field_type):
+          literal_value = get_literal(first_field_type)
+          if isinstance(literal_value, str):
+            literal_value = f"'{literal_value}'"
 
-        discrimination_expr += f'({src_name}.{first_name} === {literal_value}) ? get{pytype_to_tstype(subtype)}FromWire({src_name}) : '
+          discrimination_expr += f'({src_name}.{first_name} === {literal_value}) ? get{pytype_to_tstype(subtype)}FromWire({src_name}) : '
+        elif n == len(type_args) - 1:
+          finished = True
+          discrimination_expr += f'get{pytype_to_tstype(subtype)}FromWire({src_name})'
 
-      discrimination_expr += ' unreachable()'
+      if not finished:
+        discrimination_expr += ' unreachable()'
       return discrimination_expr
     elif is_union(type):
       # This case represents a complex union i.e "str | datetime"
@@ -221,6 +232,8 @@ class TypeIndex:
       return src_name
     elif is_annotated(type):
       return self._gen_uninit_field_assignment(type_args[0], src_name, depth)
+    elif is_alias(type):
+      return self._gen_uninit_field_assignment(type.__value__, src_name, depth)
     elif is_list(type):
       return f'{src_name}.map(({vn}: {pytype_to_tstype(type_args[0])}) => {{ return {self._gen_uninit_field_assignment(type_args[0], vn, depth)} }})'
     elif is_union_of_safe_primitive_types_or_none(type):
@@ -230,19 +243,24 @@ class TypeIndex:
     elif is_union_of_models(type):
       discrimination_expr = ''
       first_first_name = None
-      for subtype in type_args:
+      finished = False
+      for n, subtype in enumerate(type_args):
         first_name, first_field_type = list(get_type_hints(subtype).items())[0]
         if not first_first_name:
           first_first_name = first_name
         assert first_name == first_first_name  # simplifying assumption: all subtypes will have a common first literal key
-        assert is_literal(first_field_type)
-        literal_value = get_literal(first_field_type)
-        if isinstance(literal_value, str):
-          literal_value = f"'{literal_value}'"
+        if is_literal(first_field_type):
+          literal_value = get_literal(first_field_type)
+          if isinstance(literal_value, str):
+            literal_value = f"'{literal_value}'"
 
-        discrimination_expr += f'({src_name}.{first_name} === {literal_value}) ? convert{pytype_to_tstype(subtype)}ToWire({src_name}) : '
+          discrimination_expr += f'({src_name}.{first_name} === {literal_value}) ? convert{pytype_to_tstype(subtype)}ToWire({src_name}) : '
+        elif n == len(type_args) - 1:
+          finished = True
+          discrimination_expr += f'convert{pytype_to_tstype(subtype)}ToWire({src_name})'
 
-      discrimination_expr += ' unreachable()'
+      if not finished:
+        discrimination_expr += ' unreachable()'
       return discrimination_expr
     elif is_union(type):
       # This case represents a complex union i.e "str | datetime"

@@ -32,7 +32,7 @@ enum ErrorCode {
 /**
  * The union of all error types that the request could throw.
  *
- * url: /api/orgs
+ * url: /api/orgs2
  *
  */
 export type ResponseErrors = ErrorModel | ErrorModel | PydanticValidationError
@@ -45,7 +45,11 @@ const RequestError = { error: ErrorCode.RequestError, status_code: -1, request_i
 
 export type MatchInfo = { org_id: string }
 
-export type OrgData = { org_name: string }
+export type AdvancedBody = { req_id: string; org_data: AdvancedOrgData | BasicOrgData }
+
+export type BasicOrgData = { org_type: 'basic'; prop_1: string; prop_2: number }
+
+export type AdvancedOrgData = { org_type: 'advanced'; prop_1: string; prop_2: number; prop_3: number }
 
 export type Org = { org_id: string; org_name: string; created_at: Date; updated_at: Date }
 
@@ -55,9 +59,9 @@ export type PydanticValidationError = { error: ErrorCode.PydanticValidationError
 
 export type PydanticErrorDetails = { type: string; loc: (number | string)[]; msg: string; input: string; ctx: Record<string, string> | null }
 
-type ArgType = MatchInfo & OrgData
+type ArgType = MatchInfo & AdvancedBody
 
-type HookArgs = { org_id: null | string | undefined; org_name: null | string | undefined }
+type HookArgs = { org_id: null | string | undefined; req_id: null | string | undefined; org_data: AdvancedOrgData | BasicOrgData | null | undefined }
 
 export function getOrgFromWire(root: any): Org {
   return { org_id: root.org_id, org_name: root.org_name, created_at: new Date(root.created_at * 1000), updated_at: new Date(root.updated_at * 1000) }
@@ -95,25 +99,37 @@ export function getPydanticErrorDetailsFromWire(root: any): PydanticErrorDetails
   }
 }
 
-export function convertOrgDataToWire(root: any): OrgData {
-  return { org_name: root.org_name }
+export function convertAdvancedBodyToWire(root: any): AdvancedBody {
+  return {
+    req_id: root.req_id,
+    org_data: root.org_data.org_type === 'basic' ? convertBasicOrgDataToWire(root.org_data) : root.org_data.org_type === 'advanced' ? convertAdvancedOrgDataToWire(root.org_data) : unreachable(),
+  }
+}
+
+export function convertBasicOrgDataToWire(root: any): BasicOrgData {
+  return { org_type: root.org_type, prop_1: root.prop_1, prop_2: root.prop_2 }
+}
+
+export function convertAdvancedOrgDataToWire(root: any): AdvancedOrgData {
+  return { org_type: root.org_type, prop_1: root.prop_1, prop_2: root.prop_2, prop_3: root.prop_3 }
 }
 
 /**
  * The main fetch wrapper that handles serialization/deserialization
  *
- * url: /api/orgs
+ * url: /api/orgs2
  *
- * @param {string} org_name
+ * @param {string} req_id
+ * @param {AdvancedOrgData | BasicOrgData} org_data
  * @param {string} org_id
  * @returns {Org}
  *
  */
-export async function createOrg(args: ArgType, base_url: string = 'http://127.0.0.1:8081/', timeout: number = 2000, ...rest: any[]): Promise<Org> {
-  const { org_id, org_name } = args
+export async function createOrg2(args: ArgType, base_url: string = 'http://127.0.0.1:8081/', timeout: number = 2000, ...rest: any[]): Promise<Org> {
+  const { org_id, req_id, org_data } = args
 
-  const url = `${base_url}api/orgs`
-  const postBody = convertOrgDataToWire(args)
+  const url = `${base_url}api/orgs2`
+  const postBody = convertAdvancedBodyToWire(args)
   const response = await fetch(url, { method: 'POST', body: JSON.stringify(postBody), headers: { 'content-type': 'application/json' } })
 
   if (response.status == 200) {
@@ -141,23 +157,25 @@ export async function createOrg(args: ArgType, base_url: string = 'http://127.0.
  *
  * args are all nullable so this can be chained with the output of a previous hook easily.
  *
- * url: /api/orgs
+ * url: /api/orgs2
  *
- * @param {string} org_name
+ * @param {string} req_id
+ * @param {AdvancedOrgData | BasicOrgData} org_data
  * @param {string} org_id
  * @return {Org} return
  *
  */
-export function useCreateOrgMutation(args: HookArgs, invalidateQueryKey: QueryKey): UseMutationResult<Org, ResponseErrors, void, unknown> {
-  const { org_id, org_name } = args
+export function useCreateOrg2Mutation(args: HookArgs, invalidateQueryKey: QueryKey): UseMutationResult<Org, ResponseErrors, void, unknown> {
+  const { org_id, req_id, org_data } = args
 
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async () => {
       assertVal(org_id)
-      assertVal(org_name)
+      assertVal(req_id)
+      assertVal(org_data)
       assertVals(invalidateQueryKey)
-      return await createOrg({ org_id, org_name })
+      return await createOrg2({ org_id, req_id, org_data })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: invalidateQueryKey })
@@ -170,21 +188,22 @@ export function useCreateOrgMutation(args: HookArgs, invalidateQueryKey: QueryKe
  *
  * args are all nullable so this can be chained with the output of a previous hook easily.
  *
- * url: /api/orgs
+ * url: /api/orgs2
  *
- * @param {string} org_name
+ * @param {string} req_id
+ * @param {AdvancedOrgData | BasicOrgData} org_data
  * @param {string} org_id
  * @returns {Org}
  *
  */
-export function useCreateOrg(args: HookArgs, enabled: boolean = true): UseQueryResult<Org, ResponseErrors> {
-  const { org_id, org_name } = args
+export function useCreateOrg2(args: HookArgs, enabled: boolean = true): UseQueryResult<Org, ResponseErrors> {
+  const { org_id, req_id, org_data } = args
 
   return useQuery({
-    queryKey: ['useCreateOrg', org_id, org_name],
+    queryKey: ['useCreateOrg2', org_id, req_id, org_data],
     staleTime: 5 * 1000,
     queryFn: async () => {
-      return await createOrg({ org_id, org_name })
+      return await createOrg2({ org_id, req_id, org_data })
     },
     enabled: enabled,
     placeholderData: keepPreviousData,
