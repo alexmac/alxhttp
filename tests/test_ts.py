@@ -4,14 +4,17 @@ import pathlib
 import tempfile
 import unittest
 from datetime import datetime
-from typing import Annotated, Any, Dict, List, Literal, Optional
+from typing import Annotated, Any, Dict, List, Literal, Optional, Tuple
 
 from pydantic import Field
 
 from alxhttp.pydantic.basemodel import BaseModel
 from alxhttp.pydantic.route import get_route_details
+from alxhttp.pydantic.ws_route import get_ws_route_details
 from alxhttp.typescript.type_index import TypeIndex
-from alxhttp.typescript.writer import gen_ts_for_route, run_prettier
+from alxhttp.typescript.wrappers.wrappers import shared_defs
+from alxhttp.typescript.writer import gen_ts_for_route, gen_ts_for_ws_route, run_prettier
+from example.server import ws_test
 from example.sqlserver import create_org, create_org_2, delete_org, get_users_for_org_valid_args
 
 log = logging.getLogger()
@@ -41,6 +44,8 @@ class User(BaseModel):
   maybe_options: Dict[str, Opt] | None
   deep_opts: Dict[str, Dict[str, Dict[str, Dict[str, Opt]]]]
   opt_union: Optional[str | int]
+  tups: Tuple[str, str]
+  alts: Literal['foo', 'bar']
 
 
 class Org(BaseModel):
@@ -76,7 +81,31 @@ class Mem3(BaseModel):
   foo: str
 
 
+type ServerMsgType = Literal['update_item'] | Literal['delete_item']
+
+
+class WSMsg(BaseModel):
+  type: ServerMsgType
+  stream: str | None = None
+
+
+class CanvasItemUpdate(WSMsg):
+  type: Literal['update_item']
+  foo: int
+
+
+class CanvasItemDelete(WSMsg):
+  type: Literal['delete_item']
+  item_id: str
+
+
+class ServerMsg(BaseModel):
+  data: CanvasItemUpdate | CanvasItemDelete
+
+
 type ResourceCardData = Mem1 | Mem2 | Mem3
+
+type Blah = Mem1 | Mem2
 
 
 class Holder(BaseModel):
@@ -87,7 +116,10 @@ cur_dir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
 
 
 def _snapshot_typeindex(ti: TypeIndex, out):
+  out.write(shared_defs())
   for v in ti.py_to_ts.values():
+    out.write(str(v))
+  for v in ti.py_to_ts_union.values():
     out.write(str(v))
   for wf in ti.py_to_wire_func.values():
     out.write(wf + '\n')
@@ -129,7 +161,7 @@ class TestTS(unittest.IsolatedAsyncioTestCase):
   async def test_ts_types(self):
     snapshot = cur_dir / 'test_ts.snapshot.ts'
     ti = TypeIndex()
-    for t in [WithDefaultsAndAnnotations, Opt, User, Org, RecursiveType, DoubleDict, Holder]:
+    for t in [WithDefaultsAndAnnotations, Opt, User, Org, RecursiveType, DoubleDict, Holder, ServerMsg, Blah, ResourceCardData]:
       ti.recurse_model(t, init_from_wire=True, init_to_wire=True)
     snapshot_compare(ti, snapshot)
 
@@ -143,3 +175,9 @@ class TestTS(unittest.IsolatedAsyncioTestCase):
     rds = [get_route_details(route) for route in routes]
     for rd in rds:
       gen_ts_for_route(rd, base_path='tests/snapshots', pretty=True)
+
+  async def test_ws_route_wrappers(self):
+    routes = [ws_test]
+    rds = [get_ws_route_details(route) for route in routes]
+    for rd in rds:
+      gen_ts_for_ws_route(rd, base_path='tests/snapshots', pretty=True)

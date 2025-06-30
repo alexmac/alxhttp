@@ -189,7 +189,7 @@ export async function getUsersForOrgValidArgs(args: ArgType, base_url: string = 
  *
  */
 export function useGetUsersForOrgValidArgs(args: HookArgs, enabled: boolean = true): UseQueryResult<OrgUsers, ResponseErrors> {
-  const { org_id } = args
+  const { org_id } = args as ArgType
 
   return useQuery({
     queryKey: ['useGetUsersForOrgValidArgs', org_id],

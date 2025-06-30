@@ -1,3 +1,27 @@
+function assertVal<T>(val: T): asserts val is NonNullable<T> {
+  if (val === undefined || val === null) {
+    throw new Error(`Expected 'val' to be defined, but received ${val}`);
+  }
+}
+
+export function assertVals<T>(
+  arr: (T | null | undefined)[]
+): asserts arr is NonNullable<T>[] {
+  arr.forEach((val, index) => {
+    if (val === undefined || val === null) {
+      throw new Error(
+        `Expected element at index ${index} to be defined, but received ${val}`
+      );
+    }
+  });
+}
+
+function unreachable(): never {
+  throw new Error(`unreachable code reached`);
+}
+
+type QueryKey = (string | number | null | undefined)[];
+
 export type WithDefaultsAndAnnotations = {
   foo: string;
   val: string;
@@ -18,6 +42,8 @@ export type User = {
     Record<string, Record<string, Record<string, Opt>>>
   >;
   opt_union: null | number | string;
+  tups: [string, string];
+  alts: "foo" | "bar";
 };
 
 export type Org = {
@@ -38,6 +64,24 @@ export type Mem1 = { service_id: "mem1"; service_name: string };
 export type Mem2 = { service_id: "mem2"; foo: string };
 
 export type Mem3 = { service_id: string; foo: string };
+
+export type ServerMsg = { data: CanvasItemDelete | CanvasItemUpdate };
+
+export type CanvasItemUpdate = {
+  type: "update_item";
+  stream: null | string;
+  foo: number;
+};
+
+export type CanvasItemDelete = {
+  type: "delete_item";
+  stream: null | string;
+  item_id: string;
+};
+
+export type ResourceCardData = Mem1 | Mem2 | Mem3;
+
+export type Blah = Mem1 | Mem2;
 
 export function getWithDefaultsAndAnnotationsFromWire(
   root: any
@@ -107,6 +151,8 @@ export function getUserFromWire(root: any): User {
       })
     ),
     opt_union: root.opt_union,
+    tups: root.tups,
+    alts: root.alts,
   };
 }
 
@@ -162,6 +208,14 @@ export function getHolderFromWire(root: any): Holder {
   };
 }
 
+export function getResourceCardDataFromWire(root: any): ResourceCardData {
+  return root.service_id === "mem1"
+    ? getMem1FromWire(root)
+    : root.service_id === "mem2"
+      ? getMem2FromWire(root)
+      : getMem3FromWire(root);
+}
+
 export function getMem1FromWire(root: any): Mem1 {
   return { service_id: root.service_id, service_name: root.service_name };
 }
@@ -172,6 +226,33 @@ export function getMem2FromWire(root: any): Mem2 {
 
 export function getMem3FromWire(root: any): Mem3 {
   return { service_id: root.service_id, foo: root.foo };
+}
+
+export function getServerMsgFromWire(root: any): ServerMsg {
+  return {
+    data:
+      root.data.type === "update_item"
+        ? getCanvasItemUpdateFromWire(root.data)
+        : root.data.type === "delete_item"
+          ? getCanvasItemDeleteFromWire(root.data)
+          : unreachable(),
+  };
+}
+
+export function getCanvasItemUpdateFromWire(root: any): CanvasItemUpdate {
+  return { type: root.type, stream: root.stream, foo: root.foo };
+}
+
+export function getCanvasItemDeleteFromWire(root: any): CanvasItemDelete {
+  return { type: root.type, stream: root.stream, item_id: root.item_id };
+}
+
+export function getBlahFromWire(root: any): Blah {
+  return root.service_id === "mem1"
+    ? getMem1FromWire(root)
+    : root.service_id === "mem2"
+      ? getMem2FromWire(root)
+      : unreachable();
 }
 
 export function convertWithDefaultsAndAnnotationsToWire(
@@ -244,6 +325,10 @@ export function convertUserToWire(root: any): User {
       })
     ),
     opt_union: root.opt_union,
+    tups: root.tups.map((v1: string) => {
+      return v1;
+    }),
+    alts: root.alts,
   };
 }
 
@@ -309,4 +394,23 @@ export function convertMem2ToWire(root: any): Mem2 {
 
 export function convertMem3ToWire(root: any): Mem3 {
   return { service_id: root.service_id, foo: root.foo };
+}
+
+export function convertServerMsgToWire(root: any): ServerMsg {
+  return {
+    data:
+      root.data.type === "update_item"
+        ? convertCanvasItemUpdateToWire(root.data)
+        : root.data.type === "delete_item"
+          ? convertCanvasItemDeleteToWire(root.data)
+          : unreachable(),
+  };
+}
+
+export function convertCanvasItemUpdateToWire(root: any): CanvasItemUpdate {
+  return { type: root.type, stream: root.stream, foo: root.foo };
+}
+
+export function convertCanvasItemDeleteToWire(root: any): CanvasItemDelete {
+  return { type: root.type, stream: root.stream, item_id: root.item_id };
 }

@@ -5,10 +5,12 @@ from typing import List, Sequence
 import humps
 
 from alxhttp.pydantic.route import RouteDetails, get_route_details
+from alxhttp.pydantic.ws_route import WSRouteDetails, get_ws_route_details
 from alxhttp.server import ServerHandler
 from alxhttp.typescript.wrappers.gen_delete_wrapper import generate_delete_api_wrapper
 from alxhttp.typescript.wrappers.gen_get_wrapper import generate_get_api_wrapper
 from alxhttp.typescript.wrappers.gen_post_wrapper import generate_post_api_wrapper
+from alxhttp.typescript.wrappers.gen_ws_wrapper import generate_ws_api_wrapper
 
 
 def gen_ts_for_route(route_details: RouteDetails, base_path: str = '.', base_url: str = 'http://127.0.0.1:8081/', pretty: bool = False, generated_files: set | None = None) -> None:
@@ -46,6 +48,37 @@ def gen_ts_for_routes(
   for route_handler in routes:
     route_details = get_route_details(route_handler)
     gen_ts_for_route(route_details, base_path=base_path, base_url=base_url, generated_files=generated_files)
+  run_prettier(pathlib.Path(base_path))
+
+
+def gen_ts_for_ws_route(route_details: WSRouteDetails, base_path: str = '.', base_url: str = 'http://127.0.0.1:8081/', pretty: bool = False, generated_files: set | None = None) -> None:
+  root = pathlib.Path(base_path)
+  if not root.exists():
+    root.mkdir()
+  ts_file = root / f'{humps.decamelize(route_details.ts_name)}.ts'
+
+  if generated_files is not None:
+    if ts_file in generated_files:
+      raise ValueError('already generated!')
+    generated_files.add(ts_file)
+
+  print(f'regenerating: {ts_file}')
+  with open(ts_file, 'w') as f:
+    generate_ws_api_wrapper(route_details, out=f, base_url=base_url)
+    f.flush()
+  if pretty:
+    run_prettier(ts_file)
+
+
+def gen_ts_for_ws_routes(
+  routes: Sequence[ServerHandler],
+  base_path: str = 'ts',
+  base_url: str = 'http://127.0.0.1:8081/',
+):
+  generated_files = set()
+  for route_handler in routes:
+    route_details = get_ws_route_details(route_handler)
+    gen_ts_for_ws_route(route_details, base_path=base_path, base_url=base_url, generated_files=generated_files)
   run_prettier(pathlib.Path(base_path))
 
 

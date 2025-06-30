@@ -59,6 +59,8 @@ export type PydanticValidationError = { error: ErrorCode.PydanticValidationError
 
 export type PydanticErrorDetails = { type: string; loc: (number | string)[]; msg: string; input: string; ctx: Record<string, string> | null }
 
+export type OrgDataTypes = BasicOrgData | AdvancedOrgData
+
 type ArgType = MatchInfo & AdvancedBody
 
 type HookArgs = { org_id: null | string | undefined; req_id: null | string | undefined; org_data: AdvancedOrgData | BasicOrgData | null | undefined }
@@ -197,7 +199,7 @@ export function useCreateOrg2Mutation(args: HookArgs, invalidateQueryKey: QueryK
  *
  */
 export function useCreateOrg2(args: HookArgs, enabled: boolean = true): UseQueryResult<Org, ResponseErrors> {
-  const { org_id, req_id, org_data } = args
+  const { org_id, req_id, org_data } = args as ArgType
 
   return useQuery({
     queryKey: ['useCreateOrg2', org_id, req_id, org_data],

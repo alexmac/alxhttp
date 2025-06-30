@@ -33,7 +33,7 @@ class Destructure(Statement):
   arguments: List[str]
 
   def __str__(self):
-    return space(f"const {{ {join(self.arguments, sep=', ')} }} = {self.name};")
+    return space(f'const {{ {join(self.arguments, sep=", ")} }} = {self.name};')
 
 
 @dataclass
@@ -44,7 +44,7 @@ class ReturnFuncCall(Statement):
 
   def __str__(self):
     await_expr = 'await ' if self.is_async else ''
-    return space(f"return {await_expr}{self.name}({{ {join(self.arguments, sep=', ')} }});")
+    return space(f'return {await_expr}{self.name}({{ {join(self.arguments, sep=", ")} }});')
 
 
 @dataclass
@@ -82,7 +82,7 @@ class AnonFuncCall(Statement):
   statements: List[str]
 
   def __str__(self):
-    return space(f"() => {{ }} {{ {join(self.statements, sep='\n')} }}")
+    return space(f'() => {{ }} {{ {join(self.statements, sep="\n")} }}')
 
 
 @dataclass
@@ -198,6 +198,18 @@ class ObjectType:
     if not self.fields:
       return f'{export_decl}type {self.name} = Record<string, unknown>\n\n'
     return f'{export_decl}type {self.name} = {braces(self.fields, sep=",\n")}\n\n'
+
+
+@dataclass
+class UnionType:
+  name: str
+  members: List[str]
+  export: bool = True
+
+  def __str__(self):
+    export_decl = 'export ' if self.export else ''
+    assert self.members
+    return f'{export_decl}type {self.name} = {"|".join(self.members)}\n\n'
 
 
 @dataclass

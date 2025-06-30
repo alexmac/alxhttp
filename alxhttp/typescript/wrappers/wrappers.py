@@ -4,7 +4,8 @@ from typing import List, TextIO
 import humps
 
 from alxhttp.pydantic.basemodel import ErrorModel, PydanticValidationError
-from alxhttp.pydantic.route import ErrorType, RouteDetails
+from alxhttp.pydantic.route import BaseRouteDetails, ErrorType, RouteDetails
+from alxhttp.pydantic.ws_route import WSRouteDetails
 from alxhttp.typescript.basic_syntax import braces, enlist, join, jsdoc, obj_init, parens, upper_first
 from alxhttp.typescript.syntax_tree import Arg, Destructure, Func, RawStmt, Statement
 from alxhttp.typescript.type_index import TypeIndex, extract_class, jsdoc_of_toplevel_fields, nullable_union_of_toplevel_fields, pytype_to_tstype
@@ -12,7 +13,7 @@ from alxhttp.typescript.type_index import TypeIndex, extract_class, jsdoc_of_top
 
 def gen_usequery_wrapper(rd: RouteDetails[ErrorType], argtype_fields: List[str], response_type_name: str, out: TextIO = sys.stdout):
   usequery_func_name = 'use' + humps.pascalize(rd.ts_name)
-  stmts: List[Statement] = [Destructure('args', argtype_fields)]
+  stmts: List[Statement] = [Destructure('args as ArgType', argtype_fields)]
   stmts += [
     RawStmt(
       'return useQuery'
@@ -115,7 +116,12 @@ def gen_writer_imports(out: TextIO):
   out.write(shared_defs())
 
 
-def gen_enums(rd: RouteDetails, ti: TypeIndex, out: TextIO):
+def gen_unions(rd: BaseRouteDetails, ti: TypeIndex, out: TextIO):
+  for tu in ti.py_to_ts_union.values():
+    out.write(str(tu))
+
+
+def gen_enums(rd: BaseRouteDetails, ti: TypeIndex, out: TextIO):
   error_types = rd.errors + [ErrorModel, PydanticValidationError]
   for e in error_types:
     ti.recurse_model(e, init_from_wire=True, init_to_wire=False)
@@ -165,7 +171,26 @@ def setup_typeindex(rd: RouteDetails[ErrorType], out: TextIO = sys.stdout) -> Ty
   for v in ti.py_to_ts.values():
     out.write(str(v))
 
+  gen_unions(rd, ti, out)
+
   gen_arg_types(rd, ti, out)
+  gen_py_to_wire_funcs(ti, out)
+  return ti
+
+
+def setup_ws_typeindex(rd: WSRouteDetails[ErrorType], out: TextIO = sys.stdout) -> TypeIndex:
+  ti = TypeIndex()
+  ti.recurse_model(rd.match_info, init_from_wire=False, init_to_wire=False)
+  ti.recurse_model(rd.client_msg, init_from_wire=False, init_to_wire=True)
+  ti.recurse_model(rd.server_msg, init_from_wire=True, init_to_wire=False)
+
+  gen_enums(rd, ti, out)
+
+  for v in ti.py_to_ts.values():
+    out.write(str(v))
+
+  gen_unions(rd, ti, out)
+
   gen_py_to_wire_funcs(ti, out)
   return ti
 

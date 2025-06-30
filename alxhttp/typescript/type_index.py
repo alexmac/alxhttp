@@ -8,7 +8,7 @@ from pydantic import BaseModel, HttpUrl
 
 from alxhttp.pydantic.route import RouteDetails
 from alxhttp.typescript.basic_syntax import braces
-from alxhttp.typescript.syntax_tree import ObjectInit, ObjectInitField, ObjectType, ObjectTypeField, TypeDecl
+from alxhttp.typescript.syntax_tree import ObjectInit, ObjectInitField, ObjectType, ObjectTypeField, TypeDecl, UnionType
 from alxhttp.typescript.type_checks import (
   extract_class,
   get_literal,
@@ -21,6 +21,7 @@ from alxhttp.typescript.type_checks import (
   is_model_type,
   is_optional,
   is_safe_primitive_type_or_union,
+  is_tuple,
   is_type_or_annotated_type,
   is_union,
   is_union_of_models,
@@ -97,6 +98,8 @@ def recurse_model_types(t: type, seen: Set[type] | None = None) -> Generator[typ
   seen.add(t)
 
   if is_alias(t):
+    if is_union_of_models(t.__value__):
+      yield t
     yield from recurse_model_types(t.__value__, seen)
 
   if is_generic_type(t):
@@ -110,6 +113,30 @@ def recurse_model_types(t: type, seen: Set[type] | None = None) -> Generator[typ
       yield from recurse_model_types(field_type, seen)
 
 
+def _discrimination_expr(src_name, type_args) -> str:
+  discrimination_expr = ''
+  first_first_name = None
+  finished = False
+  for n, subtype in enumerate(type_args):
+    first_name, first_field_type = list(get_type_hints(subtype).items())[0]
+    if not first_first_name:
+      first_first_name = first_name
+    assert first_name == first_first_name  # simplifying assumption: all subtypes will have a common first literal key
+    if is_literal(first_field_type):
+      literal_value = get_literal(first_field_type)
+      if isinstance(literal_value, str):
+        literal_value = f"'{literal_value}'"
+
+      discrimination_expr += f'({src_name}.{first_name} === {literal_value}) ? get{pytype_to_tstype(subtype)}FromWire({src_name}) : '
+    elif n == len(type_args) - 1:
+      finished = True
+      discrimination_expr += f'get{pytype_to_tstype(subtype)}FromWire({src_name})'
+
+  if not finished:
+    discrimination_expr += ' unreachable()'
+  return discrimination_expr
+
+
 @dataclass
 class TypeIndex:
   py_to_ts: Dict[type, ObjectType] = field(default_factory=dict)
@@ -120,6 +147,8 @@ class TypeIndex:
 
   serialize_wire_func: Dict[type, str] = field(default_factory=dict)
   serialize_wire_func_name: Dict[type, str] = field(default_factory=dict)
+
+  py_to_ts_union: Dict[type, UnionType] = field(default_factory=dict)
 
   enum_refs = defaultdict(set)
 
@@ -136,16 +165,23 @@ class TypeIndex:
 
   def recurse_model(self, mt: type, init_from_wire: bool = True, init_to_wire: bool = True) -> None:
     for m in recurse_model_types(mt):
-      ts_name = extract_class(m)
-      t = model_to_type(ts_name, m)
-      extract_enum_references(self.enum_refs, m)
-      self.py_to_ts[m] = t
-      self.ts_to_py[ts_name] = m
+      if is_alias(m) and is_union_of_models(m.__value__):
+        type_name = str(m)
+        union_type = m.__value__
+        self.py_to_ts_union[union_type] = UnionType(type_name, members=[extract_class(c) for c in typing.get_args(union_type)], export=True)
+        if init_from_wire:
+          self.init_discriminated_union_from_wire(union_type)
+      else:
+        ts_name = extract_class(m)
+        t = model_to_type(ts_name, m)
+        extract_enum_references(self.enum_refs, m)
+        self.py_to_ts[m] = t
+        self.ts_to_py[ts_name] = m
 
-      if init_from_wire:
-        self.init_from_wire(m)
-      if init_to_wire:
-        self.init_to_wire(m)
+        if init_from_wire:
+          self.init_from_wire(m)
+        if init_to_wire:
+          self.init_to_wire(m)
 
   def _gen_init_field_assignment(self, type: type, src_name: str = 'root', depth: int = 0) -> str:
     depth += 1
@@ -169,7 +205,7 @@ class TypeIndex:
       return self._gen_init_field_assignment(type_args[0], src_name, depth)
     elif is_alias(type):
       return self._gen_init_field_assignment(type.__value__, src_name, depth)
-    elif is_list(type):
+    elif is_list(type) or is_tuple(type):
       if is_safe_primitive_type_or_union(type_args[0]):
         # Small optimization
         return src_name
@@ -180,27 +216,7 @@ class TypeIndex:
     elif is_optional(type):
       return f'({src_name} === null) ? null : ' + self._gen_init_field_assignment(type_args[0], src_name, depth)
     elif is_union_of_models(type):
-      discrimination_expr = ''
-      first_first_name = None
-      finished = False
-      for n, subtype in enumerate(type_args):
-        first_name, first_field_type = list(get_type_hints(subtype).items())[0]
-        if not first_first_name:
-          first_first_name = first_name
-        assert first_name == first_first_name  # simplifying assumption: all subtypes will have a common first literal key
-        if is_literal(first_field_type):
-          literal_value = get_literal(first_field_type)
-          if isinstance(literal_value, str):
-            literal_value = f"'{literal_value}'"
-
-          discrimination_expr += f'({src_name}.{first_name} === {literal_value}) ? get{pytype_to_tstype(subtype)}FromWire({src_name}) : '
-        elif n == len(type_args) - 1:
-          finished = True
-          discrimination_expr += f'get{pytype_to_tstype(subtype)}FromWire({src_name})'
-
-      if not finished:
-        discrimination_expr += ' unreachable()'
-      return discrimination_expr
+      return _discrimination_expr(src_name, type_args)
     elif is_union(type):
       # This case represents a complex union i.e "str | datetime"
       assert False
@@ -234,7 +250,8 @@ class TypeIndex:
       return self._gen_uninit_field_assignment(type_args[0], src_name, depth)
     elif is_alias(type):
       return self._gen_uninit_field_assignment(type.__value__, src_name, depth)
-    elif is_list(type):
+    elif is_list(type) or is_tuple(type):
+      # TODO: ignoring tuple types
       return f'{src_name}.map(({vn}: {pytype_to_tstype(type_args[0])}) => {{ return {self._gen_uninit_field_assignment(type_args[0], vn, depth)} }})'
     elif is_union_of_safe_primitive_types_or_none(type):
       return src_name
@@ -275,6 +292,18 @@ class TypeIndex:
       return f'convert{pytype_to_tstype(type)}ToWire({src_name})'
     else:
       raise ValueError
+
+  def init_discriminated_union_from_wire(self, py_type: type, wire_arg: str = 'root') -> str:
+    ts_type = self.py_to_ts_union[py_type]
+    de = _discrimination_expr(wire_arg, typing.get_args(py_type))
+
+    wire_func_name = f'get{ts_type.name}FromWire'
+    wire_func = f'export function {wire_func_name}(root: any): {ts_type.name} {{ return {de} }};\n'
+
+    self.py_to_wire_func_name[py_type] = wire_func_name
+    self.py_to_wire_func[py_type] = wire_func
+
+    return wire_func
 
   def init_from_wire(self, py_type: type, wire_arg: str = 'root') -> str:
     """

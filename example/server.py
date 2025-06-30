@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 from functools import partial
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from aiohttp import BodyPartReader, MultipartReader
 from aiohttp.typedefs import Middleware
-from aiohttp.web import HTTPBadRequest, HTTPInsufficientStorage, Request, Response, json_response
+from aiohttp.web import HTTPBadRequest, HTTPInsufficientStorage, Request, Response, WebSocketResponse, json_response
 
 from alxhttp.cookies import HiddenCookie, PlainCookie
 from alxhttp.errors import HTTPBadRequest as AlxHTTPBadRequest
@@ -18,6 +19,7 @@ from alxhttp.pydantic.request import Request as ModelReq
 from alxhttp.pydantic.response import EmptyResponse
 from alxhttp.pydantic.response import Response as ModelResp
 from alxhttp.pydantic.route import add_route, route
+from alxhttp.pydantic.ws_route import WSRequest, add_ws_route, ws_route
 from alxhttp.server import Server
 from alxhttp.xray import init_xray
 
@@ -36,7 +38,8 @@ async def dump_parts(log, x: MultipartReader | BodyPartReader):
   if isinstance(x, MultipartReader):
     log.info('MultipartReader')
     async for foo in x:
-      await dump_parts(log, foo)
+      if foo:
+        await dump_parts(log, foo)
   elif isinstance(x, BodyPartReader):
     log.info('BodyPartReader')
     async for bar in x:
@@ -189,6 +192,65 @@ async def validated_api(server: ExampleServer, request: ModelReq[MatchInfo, Body
   return ModelResp(body=r)
 
 
+type ServerMsgStrings = Literal['test_msg_a'] | Literal['test_msg_b']
+
+
+class ServerWSMsg(BaseModel):
+  type: ServerMsgStrings
+
+
+class ServerWSMsgA(ServerWSMsg):
+  type: Literal['test_msg_a']
+  foo: int
+
+
+class ServerWSMsgB(ServerWSMsg):
+  type: Literal['test_msg_b']
+  bar: datetime
+
+
+type ServerMsgs = ServerWSMsgA | ServerWSMsgB
+
+
+type ClientMsgStrings = Literal['test_client_msg_a'] | Literal['test_client_msg_b']
+
+
+class ClientWSMsg(BaseModel):
+  type: ClientMsgStrings
+
+
+class ClientWSMsgA(ClientWSMsg):
+  type: Literal['test_client_msg_a']
+  foo: int
+
+
+class ClientWSMsgB(ClientWSMsg):
+  type: Literal['test_client_msg_b']
+  bar: datetime
+
+
+type ClientWSMsgs = ClientWSMsgA | ClientWSMsgB
+
+
+def loads_clientmsg(msg: str) -> ClientWSMsgs:
+  d = json.loads(msg)
+  if d['type'] == 'test_client_msg_a':
+    return ClientWSMsgA.model_validate(d)
+  elif d['type'] == 'test_client_msg_b':
+    return ClientWSMsgB.model_validate(d)
+  else:
+    raise ValueError('oops')
+
+
+@ws_route('/api/ws/test', match_info=Empty, client_msg=ClientWSMsgs, server_msg=ServerMsgs)  # type: ignore
+async def ws_test(server: ExampleServer, request: WSRequest[ServerMsgs, Empty, Empty]) -> WebSocketResponse:
+  await request.prepare_ws()
+
+  await request.send(ServerWSMsgA(type='test_msg_a', foo=42))
+
+  return request._ws
+
+
 async def main():  # pragma: nocover
   logging.basicConfig(level=logging.INFO)
   log = logging.getLogger()
@@ -198,10 +260,10 @@ async def main():  # pragma: nocover
   s = ExampleServer()
 
   add_route(s, s.app.router, validated_api)
+  add_ws_route(s, s.app.router, ws_test)
 
   await s.run_app(log, port=8080)
 
 
 if __name__ == '__main__':  # pragma: nocover
-  asyncio.run(main())
   asyncio.run(main())

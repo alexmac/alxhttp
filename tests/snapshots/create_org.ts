@@ -178,7 +178,7 @@ export function useCreateOrgMutation(args: HookArgs, invalidateQueryKey: QueryKe
  *
  */
 export function useCreateOrg(args: HookArgs, enabled: boolean = true): UseQueryResult<Org, ResponseErrors> {
-  const { org_id, org_name } = args
+  const { org_id, org_name } = args as ArgType
 
   return useQuery({
     queryKey: ['useCreateOrg', org_id, org_name],

@@ -58,8 +58,17 @@ def get_literal(t: TypeType) -> str | int:
   return typing.get_args(t)[0]
 
 
+def get_literals(t: TypeType) -> typing.List[str | int]:
+  assert is_literal(t)
+  return list(typing.get_args(t))
+
+
 def is_list(t: TypeType) -> bool:
   return t is list or typing.get_origin(t) in {list, typing.List}
+
+
+def is_tuple(t: TypeType) -> bool:
+  return typing.get_origin(t) is tuple
 
 
 def is_dict(t: TypeType) -> bool:
@@ -83,11 +92,11 @@ def is_safe_primitive_type_or_union(t: TypeType) -> bool:
 
 def is_union_of_safe_primitive_types(t: TypeType) -> bool:
   if is_union(t):
-    return all([x in SAFE_PRIMITIVE_TYPES for x in typing.get_args(t)])
+    return all([x in SAFE_PRIMITIVE_TYPES or is_literal(x) for x in typing.get_args(t)])
   return False
 
 
 def is_union_of_safe_primitive_types_or_none(t: TypeType) -> bool:
   if is_union(t):
-    return all([x in SAFE_PRIMITIVE_TYPES_OR_NONE for x in typing.get_args(t)])
+    return all([x in SAFE_PRIMITIVE_TYPES_OR_NONE or is_literal(x) for x in typing.get_args(t)])
   return False
