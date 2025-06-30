@@ -29,7 +29,7 @@ class WSRouteDetails[ErrorType](BaseRouteDetails[ErrorType]):
   server_msg: Type
 
 
-def get_ws_route_details(func) -> WSRouteDetails:
+def get_ws_route_details(func: Callable) -> WSRouteDetails:
   return WSRouteDetails(
     name=func._alxhttp_route_name,
     match_info=func._alxhttp_match_info,

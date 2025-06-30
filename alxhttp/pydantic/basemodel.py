@@ -8,11 +8,11 @@ import pydantic
 from aiohttp.web import HTTPError, HTTPNotFound, HTTPSuccessful
 
 from alxhttp.req_id import get_request, get_request_id
-from alxhttp.typescript.type_checks import is_dict, is_list, is_model_type, is_optional, is_union_of_models
+from alxhttp.typescript.type_checks import TypeType, is_dict, is_list, is_model_type, is_optional, is_union_of_models
 from alxhttp.typescript.types import TSEnum
 
 
-def recursive_json_loads(type, data):
+def recursive_json_loads(type: TypeType, data) -> Any:
   """
   json loads anything that requires recursive model verification
   """

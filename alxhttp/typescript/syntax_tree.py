@@ -11,7 +11,7 @@ class Arg:
   type_decl: str | type
   default_value: str | None = field(default=None)
 
-  def __str__(self):
+  def __str__(self) -> str:
     if isinstance(self.type_decl, str):
       type_decl = self.type_decl
     else:
@@ -32,7 +32,7 @@ class Destructure(Statement):
   name: str
   arguments: List[str]
 
-  def __str__(self):
+  def __str__(self) -> str:
     return space(f'const {{ {join(self.arguments, sep=", ")} }} = {self.name};')
 
 
@@ -42,7 +42,7 @@ class ReturnFuncCall(Statement):
   arguments: List[str]
   is_async: bool = field(default=True)
 
-  def __str__(self):
+  def __str__(self) -> str:
     await_expr = 'await ' if self.is_async else ''
     return space(f'return {await_expr}{self.name}({{ {join(self.arguments, sep=", ")} }});')
 
@@ -52,7 +52,7 @@ class If(Statement):
   cond: str
   stmts: List[Statement]
 
-  def __str__(self):
+  def __str__(self) -> str:
     return space(f'if ({self.cond}) {{ {join(self.stmts)} }}')
 
 
@@ -62,7 +62,7 @@ class SwitchStmt(Statement):
   case_stmts: List[Tuple[str, Statement]]
   default_stmt: Statement
 
-  def __str__(self):
+  def __str__(self) -> str:
     cases = join([f'case {cond}: {{ {stmt} }}' for cond, stmt in self.case_stmts] + [f'default: {{ {self.default_stmt} }}'])
 
     return space(f'switch ({self.cond}) {{ {cases} }}')
@@ -73,7 +73,7 @@ class TryCatch(Statement):
   try_stmts: List[Statement]
   catch_stmts: List[Statement]
 
-  def __str__(self):
+  def __str__(self) -> str:
     return space(f'try {{ {join(self.try_stmts)} }} catch(error: any) {{ {join(self.catch_stmts)} }}')
 
 
@@ -81,7 +81,7 @@ class TryCatch(Statement):
 class AnonFuncCall(Statement):
   statements: List[str]
 
-  def __str__(self):
+  def __str__(self) -> str:
     return space(f'() => {{ }} {{ {join(self.statements, sep="\n")} }}')
 
 
@@ -89,7 +89,7 @@ class AnonFuncCall(Statement):
 class CheckedParamsAccess(Statement):
   name: str
 
-  def __str__(self):
+  def __str__(self) -> str:
     return space(f"""const {self.name} = params.{self.name};
                  if (!{self.name}) {{ throw Error('failed to access param'); }}
 """)
@@ -99,7 +99,7 @@ class CheckedParamsAccess(Statement):
 class CheckedFormAccess(Statement):
   name: str
 
-  def __str__(self):
+  def __str__(self) -> str:
     return space(f"""const {self.name} = formData.get('{self.name}')?.toString();
                  if (!{self.name}) {{ throw Error('failed to access form data'); }}
 """)
@@ -114,7 +114,7 @@ class Func:
   is_async: bool = field(default=True)
   is_export: bool = field(default=False)
 
-  def __str__(self):
+  def __str__(self) -> str:
     export = 'export ' if self.is_export else ''
     prefix = 'async ' if self.is_async else ''
     return f"""{export} {prefix} function {self.name}({join(self.arguments, sep=', ')}): {self.return_decl}
@@ -125,7 +125,7 @@ class Func:
 class RawStmt(Statement):
   stmt: str
 
-  def __str__(self):
+  def __str__(self) -> str:
     return self.stmt
 
 
@@ -135,7 +135,7 @@ class JsonPost(Statement):
   args: str
   response_type: str
 
-  def __str__(self):
+  def __str__(self) -> str:
     return f"""
     const response = await postJSON(`{self.url}`, {self.args});
     
@@ -153,7 +153,7 @@ class JsonGet(Statement):
   url: str
   response_type: str
 
-  def __str__(self):
+  def __str__(self) -> str:
     return f"""
     const response = await getJSON(`{self.url}`);
     
@@ -170,7 +170,7 @@ class JsonGet(Statement):
 class TypeDecl:
   decl: type
 
-  def __str__(self):
+  def __str__(self) -> str:
     if isinstance(self.decl, str):
       raise ValueError
     return pytype_to_tstype(self.decl)
@@ -182,7 +182,7 @@ class ObjectTypeField:
   decl: TypeDecl
   default_value: str | None
 
-  def __str__(self):
+  def __str__(self) -> str:
     default_value = f' = {self.default_value}' if self.default_value else ''
     return f'{self.name}: {self.decl}{default_value}'
 
@@ -193,7 +193,7 @@ class ObjectType:
   fields: List[ObjectTypeField]
   export: bool = True
 
-  def __str__(self):
+  def __str__(self) -> str:
     export_decl = 'export ' if self.export else ''
     if not self.fields:
       return f'{export_decl}type {self.name} = Record<string, unknown>\n\n'
@@ -206,7 +206,7 @@ class UnionType:
   members: List[str]
   export: bool = True
 
-  def __str__(self):
+  def __str__(self) -> str:
     export_decl = 'export ' if self.export else ''
     assert self.members
     return f'{export_decl}type {self.name} = {"|".join(self.members)}\n\n'
@@ -217,7 +217,7 @@ class ObjectInitField:
   name: str
   value: str | None
 
-  def __str__(self):
+  def __str__(self) -> str:
     return f'{self.name}: {self.value}'
 
 
@@ -225,5 +225,5 @@ class ObjectInitField:
 class ObjectInit:
   fields: List[ObjectInitField]
 
-  def __str__(self):
+  def __str__(self) -> str:
     return f'{braces(self.fields, sep=",\n")}\n'

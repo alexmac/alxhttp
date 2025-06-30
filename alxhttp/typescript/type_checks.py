@@ -29,7 +29,7 @@ def is_union(t: TypeType) -> bool:
   return typing.get_origin(t) in {typing.Union, types.UnionType}
 
 
-def is_alias(t: TypeType) -> bool:
+def is_alias(t: TypeType) -> typing.TypeGuard[typing.TypeAliasType]:
   return isinstance(t, typing.TypeAliasType)
 
 
@@ -63,15 +63,15 @@ def get_literals(t: TypeType) -> typing.List[str | int]:
   return list(typing.get_args(t))
 
 
-def is_list(t: TypeType) -> bool:
+def is_list(t: TypeType) -> typing.TypeGuard[typing.List]:
   return t is list or typing.get_origin(t) in {list, typing.List}
 
 
-def is_tuple(t: TypeType) -> bool:
+def is_tuple(t: TypeType) -> typing.TypeGuard[tuple]:
   return typing.get_origin(t) is tuple
 
 
-def is_dict(t: TypeType) -> bool:
+def is_dict(t: TypeType) -> typing.TypeGuard[typing.Dict]:
   return t is dict or typing.get_origin(t) in {dict, typing.Dict}
 
 

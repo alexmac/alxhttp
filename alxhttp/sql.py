@@ -39,11 +39,11 @@ class SQLValidator[T: BaseModel]:
     self.cls = cls
     register_file_listener(self.file, self.validate)
 
-  def __str__(self):
+  def __str__(self) -> str:
     return self.query
 
   @property
-  def query(self):
+  def query(self) -> str:
     if not self._query:
       self.validate()
 

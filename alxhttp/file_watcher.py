@@ -7,10 +7,10 @@ from typing import Callable, Dict, Generator
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
-_watched_files: Dict[str, Callable] = {}
+_watched_files: Dict[str, Callable[[], None]] = {}
 
 
-def register_file_listener(file: str | Path, callback: Callable) -> None:
+def register_file_listener(file: str | Path, callback: Callable[[], None]) -> None:
   global _watched_files
   _watched_files[str(file)] = callback
   print(f'watching {file}')

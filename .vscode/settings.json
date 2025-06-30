@@ -33,4 +33,6 @@
   "Prettier-SQL.newlineBeforeSemicolon": false,
   "Prettier-SQL.SQLFlavourOverride": "postgresql",
   "Prettier-SQL.tabulateAlias": true,
+  "cSpell.includeRegExpList": ["CStyleComment", "string"],
+  "cSpell.ignoreRegExpList": ["from.*"]
 }

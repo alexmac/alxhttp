@@ -43,7 +43,7 @@ def gen_ts_for_routes(
   routes: Sequence[ServerHandler],
   base_path: str = 'ts',
   base_url: str = 'http://127.0.0.1:8081/',
-):
+) -> None:
   generated_files = set()
   for route_handler in routes:
     route_details = get_route_details(route_handler)
@@ -74,7 +74,7 @@ def gen_ts_for_ws_routes(
   routes: Sequence[ServerHandler],
   base_path: str = 'ts',
   base_url: str = 'http://127.0.0.1:8081/',
-):
+) -> None:
   generated_files = set()
   for route_handler in routes:
     route_details = get_ws_route_details(route_handler)
@@ -82,7 +82,7 @@ def gen_ts_for_ws_routes(
   run_prettier(pathlib.Path(base_path))
 
 
-def run_prettier(path: pathlib.Path, should_raise: bool = True, opts: List[str] | None = None):
+def run_prettier(path: pathlib.Path, should_raise: bool = True, opts: List[str] | None = None) -> None:
   if not opts:
     opts = []
 

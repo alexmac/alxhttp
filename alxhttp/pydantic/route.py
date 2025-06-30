@@ -32,7 +32,7 @@ class RouteDetails[ErrorType](BaseRouteDetails[ErrorType]):
   response: Type
 
 
-def get_route_details(func) -> RouteDetails:
+def get_route_details(func: Callable) -> RouteDetails:
   return RouteDetails(
     name=func._alxhttp_route_name,
     verb=func._alxhttp_route_verb,
