@@ -25,4 +25,3 @@ async def security_headers(request: Request, handler: Handler) -> StreamResponse
   except HTTPException as e:
     _apply_security_header_defaults(e.headers)
     raise
-    raise

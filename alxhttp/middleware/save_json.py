@@ -101,4 +101,3 @@ async def save_json(request: Request, handler: Handler) -> StreamResponse:
       )
 
   return resp
-  return resp
