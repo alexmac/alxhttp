@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Awaitable, Callable, List, Optional, TypeVar
+from typing import Awaitable, Callable, Iterable, Optional, TypeVar
 
 from aiohttp import web
 from aiohttp.typedefs import Middleware
@@ -14,7 +14,7 @@ from alxhttp.middleware.defaults import default_middleware
 class Server:
   def __init__(
     self,
-    middlewares: Optional[List[Middleware]] = None,
+    middlewares: Optional[Iterable[Middleware]] = None,
     logger: Optional[logging.Logger] = None,
   ):
     if middlewares is None:

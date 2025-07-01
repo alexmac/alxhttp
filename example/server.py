@@ -5,7 +5,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from functools import partial
-from typing import List, Literal, Optional
+from typing import Iterable, Literal, Optional
 
 from aiohttp import BodyPartReader, MultipartReader
 from aiohttp.typedefs import Middleware
@@ -145,7 +145,7 @@ class RespType(MatchInfo, Body):
 
 
 class ExampleServer(Server):
-  def __init__(self, middlewares: Optional[List[Middleware]] = None, logger: Optional[logging.Logger] = None):
+  def __init__(self, middlewares: Optional[Iterable[Middleware]] = None, logger: Optional[logging.Logger] = None):
     super().__init__(middlewares=middlewares, logger=logger)
 
     self.app.router.add_get(r'/api/test', partial(handler_test_api, self))

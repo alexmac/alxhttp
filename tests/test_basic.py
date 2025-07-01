@@ -103,7 +103,7 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
               'expires': ANY,
               'path': '/',
               'comment': '',
-              'domain': 'localhost',
+              'domain': '',
               'max-age': '0',
               'secure': '',
               'httponly': '',

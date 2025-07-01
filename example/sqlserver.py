@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from datetime import datetime
-from typing import Annotated, Dict, List, Literal, Optional
+from typing import Annotated, Dict, Iterable, List, Literal, Optional
 
 from aiohttp.typedefs import Middleware
 from asyncpg import create_pool
@@ -17,7 +17,7 @@ from alxhttp.sql import SQLArgValidator, SQLValidator
 
 
 class ExampleServer(Server):
-  def __init__(self, pool: Pool, middlewares: Optional[List[Middleware]] = None, logger: Optional[logging.Logger] = None):
+  def __init__(self, pool: Pool, middlewares: Optional[Iterable[Middleware]] = None, logger: Optional[logging.Logger] = None):
     super().__init__(middlewares=middlewares, logger=logger)
     self.pool = pool
 
