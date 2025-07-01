@@ -58,7 +58,7 @@ wheels = [
 
 [[package]]
 name = "alxhttp"
-version = "0.9.66"
+version = "0.9.67"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },

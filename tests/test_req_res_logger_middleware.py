@@ -7,7 +7,7 @@ from aiohttp import web
 from aiohttp.test_utils import make_mocked_request
 from aiohttp.web_exceptions import HTTPBadRequest
 
-from alxhttp.middleware.req_res_logger import configure_req_res_logger_codes, req_res_logger
+from alxhttp.middleware.req_res_logger import req_res_logger
 from alxhttp.req_id import set_request_id
 
 
@@ -41,8 +41,9 @@ class TestReqResLoggerMiddleware(unittest.IsolatedAsyncioTestCase):
     request = make_mocked_request('POST', '/test', app=self.app)
     set_request_id(request)
 
-    # Run middleware
-    response = await req_res_logger(request, handler_that_returns_400)
+    # Create middleware with default settings and run it
+    middleware = req_res_logger()
+    response = await middleware(request, handler_that_returns_400)
 
     # Check response is correct
     assert response.status == 400
@@ -63,8 +64,9 @@ class TestReqResLoggerMiddleware(unittest.IsolatedAsyncioTestCase):
     request = make_mocked_request('GET', '/test', app=self.app)
     set_request_id(request)
 
-    # Run middleware
-    response = await req_res_logger(request, handler_that_returns_200)
+    # Create middleware with default settings and run it
+    middleware = req_res_logger()
+    response = await middleware(request, handler_that_returns_200)
 
     # Check response is correct
     assert response.status == 200
@@ -76,9 +78,6 @@ class TestReqResLoggerMiddleware(unittest.IsolatedAsyncioTestCase):
   async def test_configurable_status_codes(self) -> None:
     """Test that status codes can be configured"""
 
-    # Configure to log 404 and 500 status codes
-    configure_req_res_logger_codes(self.app, [404, 500])
-
     async def handler_that_returns_404(request):
       return web.json_response({'error': 'Not found'}, status=404)
 
@@ -86,8 +85,9 @@ class TestReqResLoggerMiddleware(unittest.IsolatedAsyncioTestCase):
     request = make_mocked_request('GET', '/missing', app=self.app)
     set_request_id(request)
 
-    # Run middleware
-    response = await req_res_logger(request, handler_that_returns_404)
+    # Run middleware with custom status codes
+    middleware = req_res_logger([404, 500])
+    response = await middleware(request, handler_that_returns_404)
 
     # Check response is correct
     assert response.status == 404
@@ -108,8 +108,9 @@ class TestReqResLoggerMiddleware(unittest.IsolatedAsyncioTestCase):
     set_request_id(request)
 
     # Run middleware and expect exception to be re-raised
+    middleware = req_res_logger()
     with self.assertRaises(HTTPBadRequest):
-      await req_res_logger(request, handler_that_raises_400)
+      await middleware(request, handler_that_raises_400)
 
     # Check that log was written for the exception
     log_output = self.log_buffer.getvalue()
@@ -134,7 +135,8 @@ class TestReqResLoggerMiddleware(unittest.IsolatedAsyncioTestCase):
     request.text = mock_text
 
     # Run middleware
-    response = await req_res_logger(request, handler_that_returns_400)
+    middleware = req_res_logger()
+    response = await middleware(request, handler_that_returns_400)
 
     # Check that log contains request details
     log_output = self.log_buffer.getvalue()
@@ -162,7 +164,8 @@ class TestReqResLoggerMiddleware(unittest.IsolatedAsyncioTestCase):
     request.text = mock_text
 
     # Run middleware - should not raise exception
-    response = await req_res_logger(request, handler_that_returns_400)
+    middleware = req_res_logger()
+    response = await middleware(request, handler_that_returns_400)
 
     # Check response is correct
     assert response.status == 400
@@ -174,9 +177,6 @@ class TestReqResLoggerMiddleware(unittest.IsolatedAsyncioTestCase):
   async def test_empty_status_codes_list(self) -> None:
     """Test that empty status codes list disables logging"""
 
-    # Configure to log no status codes
-    configure_req_res_logger_codes(self.app, [])
-
     async def handler_that_returns_400(request):
       return web.json_response({'error': 'Bad request'}, status=400)
 
@@ -184,8 +184,9 @@ class TestReqResLoggerMiddleware(unittest.IsolatedAsyncioTestCase):
     request = make_mocked_request('POST', '/test', app=self.app)
     set_request_id(request)
 
-    # Run middleware
-    response = await req_res_logger(request, handler_that_returns_400)
+    # Run middleware with empty status codes list
+    middleware = req_res_logger([])
+    response = await middleware(request, handler_that_returns_400)
 
     # Check response is correct
     assert response.status == 400
