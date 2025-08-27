@@ -3,7 +3,6 @@ import unittest
 
 from alxhttp.schemas import gen_prefixed_id
 
-
 log = logging.getLogger()
 
 

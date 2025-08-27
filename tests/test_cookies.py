@@ -1,17 +1,16 @@
 import asyncio
-from datetime import timedelta
 import logging
 import unittest
+from datetime import timedelta
 from unittest.mock import Mock
 
 import aiohttp
 from yarl import URL
 
-
+import redis.asyncio as redis
 from alxhttp.cookies import RedisHiddenCookie
 from alxhttp.json import json_response
 from example.server import ExampleServer
-import redis.asyncio as redis
 
 log = logging.getLogger()
 

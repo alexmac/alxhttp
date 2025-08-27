@@ -1,7 +1,6 @@
 import logging
 import unittest
 
-
 from alxhttp.pydantic.route import add_route
 from example.server import ExampleServer, validated_api
 

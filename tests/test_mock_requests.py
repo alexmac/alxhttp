@@ -6,11 +6,10 @@ from unittest.mock import ANY
 
 import aiohttp
 import aiohttp.abc
+import pytest
 from aiohttp.test_utils import make_mocked_request
 from multidict import CIMultiDict
 from pydantic import ValidationError
-import pytest
-
 
 from alxhttp.tests.multipart_bytes_writer import MultipartBytesWriter
 from alxhttp.tests.stream_reader import BytesStreamReader, JSONStreamReader

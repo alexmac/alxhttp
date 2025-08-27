@@ -1,9 +1,8 @@
-from asyncio import sleep
 import logging
-from pathlib import Path
 import tempfile
 import unittest
-
+from asyncio import sleep
+from pathlib import Path
 
 from alxhttp.file_watcher import register_file_listener, unregister_file_listener, watch_dir
 
