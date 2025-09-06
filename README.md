@@ -8,5 +8,8 @@ Features:
 - a simple base server class pattern to follow
 
 # Publish
+pyright --createstub alxhttp
+rsync -a typings/alxhttp/ alxhttp/
+rm -rf typings
 uv build
 twine upload dist/*

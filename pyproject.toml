@@ -1,24 +1,6 @@
-[tool.ruff]
-line-length = 200
-indent-width = 2
-
-[tool.ruff.format]
-quote-style = "single"
-indent-style = "space"
-docstring-code-format = true
-
-[tool.isort]
-profile = "black"
-indent = "  "
-line_length = 200
-
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "alxhttp"
-version = "0.9.69"
+version = "0.9.70"
 authors = [{ name = "Alexander Macdonald", email = "alex@alexmac.cc" }]
 description = "A better base server for AioHTTP"
 readme = "README.md"
@@ -41,10 +23,18 @@ dependencies = [
   "pytest>=8.3.4",
   "pytest-cov>=6.0.0",
   "pytest-mock>=3.14.0",
+  "pyright>=1.1.405",
 ]
+
+[project.urls]
+Homepage = "https://github.com/alexmac/alxhttp"
 
 [project.optional-dependencies]
 xray = ['aws-xray-sdk ~= 2.13']
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = [
@@ -56,8 +46,19 @@ packages = [
   "alxhttp.typescript.wrappers",
 ]
 
-[project.urls]
-Homepage = "https://github.com/alexmac/alxhttp"
+[tool.ruff]
+line-length = 200
+indent-width = 2
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+docstring-code-format = true
+
+[tool.isort]
+profile = "black"
+indent = "  "
+line_length = 200
 
 [tool.pytest.ini_options]
 log_file_level = "INFO"
