@@ -4,7 +4,7 @@ import pathlib
 import tempfile
 import unittest
 from datetime import datetime
-from typing import Annotated, Any, Dict, List, Literal, Optional, Tuple
+from typing import Annotated, Any, ClassVar, Dict, List, Literal, Optional, Tuple
 
 from pydantic import Field
 
@@ -101,6 +101,7 @@ class CanvasItemDelete(WSMsg):
 
 class ServerMsg(BaseModel):
   data: CanvasItemUpdate | CanvasItemDelete
+  ignore_me: ClassVar[str] = 'fff'
 
 
 type ResourceCardData = Mem1 | Mem2 | Mem3

@@ -14,6 +14,7 @@ from alxhttp.typescript.type_checks import (
   get_literal,
   is_alias,
   is_annotated,
+  is_class_var,
   is_dict,
   is_generic_type,
   is_list,
@@ -47,6 +48,9 @@ def model_to_type(name: str, model) -> ObjectType:
   model_fields = get_type_hints(model, include_extras=True)
   fields = []
   for field_name, field_type in model_fields.items():
+    td = TypeDecl(field_type)
+    if is_class_var(field_type):
+      continue
     fields.append(ObjectTypeField(field_name, TypeDecl(field_type), None))
 
   return ObjectType(name, fields)
@@ -96,6 +100,9 @@ def recurse_model_types(t: type, seen: Set[type] | None = None) -> Generator[typ
   if t in seen:
     return
   seen.add(t)
+
+  if is_class_var(t):
+    return
 
   if is_alias(t):
     if is_union_of_models(t.__value__):
@@ -171,6 +178,8 @@ class TypeIndex:
         self.py_to_ts_union[union_type] = UnionType(type_name, members=[extract_class(c) for c in typing.get_args(union_type)], export=True)
         if init_from_wire:
           self.init_discriminated_union_from_wire(union_type)
+      elif is_class_var(m):
+        continue # ignore these
       else:
         ts_name = extract_class(m)
         t = model_to_type(ts_name, m)
@@ -183,7 +192,7 @@ class TypeIndex:
         if init_to_wire:
           self.init_to_wire(m)
 
-  def _gen_init_field_assignment(self, type: type, src_name: str = 'root', depth: int = 0) -> str:
+  def _gen_init_field_assignment(self, type: type, src_name: str = 'root', depth: int = 0) -> str|None:
     depth += 1
 
     kn = f'k{depth}'
@@ -201,6 +210,8 @@ class TypeIndex:
       return f'new Date({src_name} * 1000)'
     elif type == Any:
       return src_name
+    elif is_class_var(type):
+      return None
     elif is_annotated(type):
       return self._gen_init_field_assignment(type_args[0], src_name, depth)
     elif is_alias(type):
@@ -214,7 +225,10 @@ class TypeIndex:
     elif is_union_of_safe_primitive_types_or_none(type):
       return src_name
     elif is_optional(type):
-      return f'({src_name} === null) ? null : ' + self._gen_init_field_assignment(type_args[0], src_name, depth)
+      sub = self._gen_init_field_assignment(type_args[0], src_name, depth)
+      if sub is None:
+        return None
+      return f'({src_name} === null) ? null : ' + sub
     elif is_union_of_models(type):
       return _discrimination_expr(src_name, type_args)
     elif is_union(type):
@@ -230,7 +244,7 @@ class TypeIndex:
     else:
       raise ValueError
 
-  def _gen_uninit_field_assignment(self, type: type, src_name: str = 'root', depth: int = 0) -> str:
+  def _gen_uninit_field_assignment(self, type: type, src_name: str = 'root', depth: int = 0) -> str|None:
     depth += 1
 
     kn = f'k{depth}'
@@ -246,6 +260,8 @@ class TypeIndex:
       return f'{src_name}.getTime()'
     elif type == Any:
       return src_name
+    elif is_class_var(type):
+      return None
     elif is_annotated(type):
       return self._gen_uninit_field_assignment(type_args[0], src_name, depth)
     elif is_alias(type):
@@ -256,7 +272,10 @@ class TypeIndex:
     elif is_union_of_safe_primitive_types_or_none(type):
       return src_name
     elif is_optional(type):
-      return f'({src_name} === null) ? null : ' + self._gen_uninit_field_assignment(type_args[0], src_name, depth)
+      sub = self._gen_uninit_field_assignment(type_args[0], src_name, depth)
+      if sub is None:
+        return None
+      return f'({src_name} === null) ? null : ' + sub
     elif is_union_of_models(type):
       discrimination_expr = ''
       first_first_name = None
@@ -286,7 +305,10 @@ class TypeIndex:
       assert is_type_or_annotated_type(type_args[0], str)
       ktype = pytype_to_tstype(type_args[0])
       vtype = pytype_to_tstype(type_args[1])
-      return f'Object.fromEntries(Object.entries({src_name} as Record<{ktype}, {vtype}>).map(([{kn}, {vn}]) => {{ return [{kn}, {self._gen_uninit_field_assignment(type_args[1], vn, depth)}] }} ))'
+      sub = self._gen_uninit_field_assignment(type_args[1], vn, depth)
+      if sub is None:
+        return None
+      return f'Object.fromEntries(Object.entries({src_name} as Record<{ktype}, {vtype}>).map(([{kn}, {vn}]) => {{ return [{kn}, {sub}] }} ))'
 
     elif is_model_type(type):
       return f'convert{pytype_to_tstype(type)}ToWire({src_name})'
@@ -313,10 +335,13 @@ class TypeIndex:
     ts_type = self.py_to_ts[py_type]
     field_assignments: List[ObjectInitField] = []
     for tsfield in ts_type.fields:
+      field_type = self._gen_init_field_assignment(tsfield.decl.decl, f'{wire_arg}.{tsfield.name}')
+      if field_type is None:
+        continue
       field_assignments.append(
         ObjectInitField(
           tsfield.name,
-          self._gen_init_field_assignment(tsfield.decl.decl, f'{wire_arg}.{tsfield.name}'),
+          field_type,
         )
       )
 

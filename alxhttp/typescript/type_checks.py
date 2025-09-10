@@ -1,3 +1,4 @@
+from tkinter import S
 import types
 import typing
 
@@ -31,6 +32,10 @@ def is_union(t: TypeType) -> bool:
 
 def is_alias(t: TypeType) -> typing.TypeGuard[typing.TypeAliasType]:
   return isinstance(t, typing.TypeAliasType)
+
+
+def is_class_var(t: TypeType) -> bool:
+  return typing.get_origin(t) == typing.ClassVar
 
 
 def is_optional(t: TypeType) -> bool:
