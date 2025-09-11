@@ -1,5 +1,5 @@
 all:
-	uv run pyright --createstub alxhttp
+	uv run basedpyright --createstub alxhttp
 	rsync -a typings/alxhttp/ alxhttp/
 	uv build
 	twine upload dist/*
