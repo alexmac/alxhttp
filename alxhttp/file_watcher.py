@@ -1,13 +1,14 @@
 import os
 import sys
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Callable, Dict, Generator
+from typing import Callable, override
 
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
-_watched_files: Dict[str, Callable[[], None]] = {}
+_watched_files: dict[str, Callable[[], None]] = {}
 
 
 def register_file_listener(file: str | Path, callback: Callable[[], None]) -> None:
@@ -24,6 +25,7 @@ def unregister_file_listener(
 
 
 class FSWatchHandler(FileSystemEventHandler):
+  @override
   def on_modified(self, event: FileSystemEvent) -> None:
     if event.is_directory:
       return None
@@ -44,7 +46,7 @@ def watch_dir(watch_dir: Path | None = None) -> Generator[None, None, None]:
     watch_dir = Path(os.path.dirname(os.path.abspath(sys.argv[0])))
   event_handler = FSWatchHandler()
   observer = Observer()
-  observer.schedule(event_handler, watch_dir, recursive=True)
+  observer.schedule(event_handler, str(watch_dir), recursive=True)
   observer.start()
   try:
     print(f'watching {watch_dir}')

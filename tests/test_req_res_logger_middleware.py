@@ -2,6 +2,7 @@ import json
 import logging
 import unittest
 from io import StringIO
+from typing import override
 
 from aiohttp import web
 from aiohttp.test_utils import make_mocked_request
@@ -12,9 +13,10 @@ from alxhttp.req_id import set_request_id
 
 
 class TestReqResLoggerMiddleware(unittest.IsolatedAsyncioTestCase):
+  @override
   def setUp(self) -> None:
     """Set up test fixtures"""
-    self.app = web.Application()
+    self.app: web.Application = web.Application()
     # Assign request ID for testing
     self.req_id = 'test-req-id-123'
 

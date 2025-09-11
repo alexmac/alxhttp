@@ -1,7 +1,7 @@
 import asyncio
 import logging
-from collections.abc import Awaitable
-from typing import Callable, Iterable, TypeVar
+from collections.abc import Awaitable, Iterable
+from typing import Callable, TypeVar
 
 from aiohttp import web
 from aiohttp.typedefs import Middleware
@@ -22,10 +22,10 @@ class Server:
       middlewares = default_middleware()
     if logger is None:
       logger = get_json_server_logger()
-    self.app = web.Application(middlewares=middlewares, logger=logger)
+    self.app: web.Application = web.Application(middlewares=middlewares, logger=logger)
     self.host: str
     self.port: int
-    self.shutdown_event = asyncio.Event()
+    self.shutdown_event: asyncio.Event = asyncio.Event()
 
   async def setup_ctx(self, app: web.Application):
     """
@@ -39,7 +39,7 @@ class Server:
 
     runner = web.AppRunner(self.app, debug=True, access_log_class=JSONAccessLogger)
     await runner.setup()
-    site = web.TCPSite(runner, host, port)
+    site: web.TCPSite = web.TCPSite(runner, host, port)
 
     await site.start()
 

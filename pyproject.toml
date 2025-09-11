@@ -1,6 +1,6 @@
 [project]
 name = "alxhttp"
-version = "0.9.74"
+version = "0.9.75"
 authors = [{ name = "Alexander Macdonald", email = "alex@alexmac.cc" }]
 description = "A better base server for AioHTTP"
 readme = "README.md"
@@ -23,6 +23,7 @@ dependencies = [
   "pytest-cov>=6.0.0",
   "pytest-mock>=3.14.0",
   "basedpyright>=1.31.4",
+  "asyncpg-stubs>=0.30.2",
 ]
 
 [project.urls]
@@ -87,3 +88,5 @@ reportUnusedCallResult = false # I want to enabled this, but the IO "write" meth
 reportConstantRedefinition = false # reports glopbals as always constant, not sure i agree
 reportUnknownVariableType = false # too noisy when walking dicts from json.loads
 reportUnknownMemberType = false # too noisy when walking dicts from json.loads
+reportPrivateUsage = false
+reportUnusedParameter = false

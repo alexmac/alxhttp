@@ -1,7 +1,7 @@
 import logging
 from json import dumps
 from time import time_ns
-from typing import Any
+from typing import Any, override
 
 from aiohttp.abc import AbstractAccessLogger
 from aiohttp.web import BaseRequest, StreamResponse
@@ -24,6 +24,7 @@ class JSONAccessLogger(AbstractAccessLogger):
   def __init__(self, logger: logging.Logger, log_format: str):
     super().__init__(logger, log_format)
 
+  @override
   def log(
     self,
     request: BaseRequest,
@@ -58,6 +59,7 @@ class JSONAccessLogger(AbstractAccessLogger):
 
 
 class JSONLogFilter(logging.Filter):
+  @override
   def filter(self, record: logging.LogRecord) -> bool:
     request = get_request()
     request_id = get_request_id(request) if request else None

@@ -63,6 +63,7 @@ source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
     { name = "asyncpg" },
+    { name = "asyncpg-stubs" },
     { name = "basedpyright" },
     { name = "pglast" },
     { name = "pip" },
@@ -84,6 +85,7 @@ xray = [
 requires-dist = [
     { name = "aiohttp", specifier = "~=3.9" },
     { name = "asyncpg", specifier = "~=0.29" },
+    { name = "asyncpg-stubs", specifier = ">=0.30.2" },
     { name = "aws-xray-sdk", marker = "extra == 'xray'", specifier = "~=2.13" },
     { name = "basedpyright", specifier = ">=1.31.4" },
     { name = "pglast", specifier = "~=7.7" },
@@ -123,6 +125,19 @@ wheels = [
 ]
 
 [[package]]
+name = "asyncpg-stubs"
+version = "0.30.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "asyncpg" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a3/e5/1a06ecec2a77a75974ba6b22d3bed697193177c0ed7595cce4dd2362735d/asyncpg_stubs-0.30.2.tar.gz", hash = "sha256:b8a1b7cb790a7b8a0e4e64e438a97c3fac77ea02441b563b1975748f18af33ab", size = 20250 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a4/22/77a4a08cc9ef4f8bbb5e7ffbf4be008e596b535a3533a28c3465e9400d75/asyncpg_stubs-0.30.2-py3-none-any.whl", hash = "sha256:e57818bbaf10945a60ff3219da3c5ce97e1b424503b6a6f0a18db99797397cbb", size = 26929 },
+]
+
+[[package]]
 name = "attrs"
 version = "25.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -158,16 +173,16 @@ wheels = [
 
 [[package]]
 name = "botocore"
-version = "1.40.28"
+version = "1.40.29"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jmespath" },
     { name = "python-dateutil" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/10/b2/fe454104d7321c2e08b8eefa87cbd8c25128f6ba064595d69b2fc61dd29c/botocore-1.40.28.tar.gz", hash = "sha256:4a26c662dcce2e675209c23cd3a569e137a59fdc9692b8bb9dabed522cbe2d8c", size = 14343261 }
+sdist = { url = "https://files.pythonhosted.org/packages/3f/0d/3e420528a69ea8077c91d80aaeea9c2c4dcdc4115e5e267f52636f3fa4f5/botocore-1.40.29.tar.gz", hash = "sha256:4e5207acef693167bb99c08a4c24d3e9405cb9669999e272a473a04cf2ba9df9", size = 14346806 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ba/c9/41542221147a162f7043235cbccbb3b39148ab408e76fe466783f27c1680/botocore-1.40.28-py3-none-any.whl", hash = "sha256:fcd393da6cb4d97cff3823d4085cd034d1c80f1cc22a57b1f84d3f863b337a03", size = 14017584 },
+    { url = "https://files.pythonhosted.org/packages/4b/9e/d9d9726a9c95179544fb7ca3cba7e1cf82b60d9bc030eb034aa4abc22454/botocore-1.40.29-py3-none-any.whl", hash = "sha256:69a180a027044ae01db80b4cce4b2f93b6e4731fd7a8393c54f708c5677af85f", size = 14021245 },
 ]
 
 [[package]]

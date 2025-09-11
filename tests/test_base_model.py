@@ -1,7 +1,6 @@
 import json
 import logging
 import unittest
-from typing import Dict, List
 
 import pydantic
 
@@ -26,12 +25,12 @@ class ModelTest2(pydantic.BaseModel):
 
 class ModelTest3(pydantic.BaseModel):
   some_id: str
-  foo: List[Model]
+  foo: list[Model]
 
 
 class ModelTest4(pydantic.BaseModel):
   some_id: str
-  foo: List[Model] | None
+  foo: list[Model] | None
 
 
 class Model5(pydantic.BaseModel):
@@ -56,11 +55,11 @@ class ModelTest7A(pydantic.BaseModel):
 
 
 class ModelTest7(pydantic.BaseModel):
-  foo: List[ModelTest7A | None]
+  foo: list[ModelTest7A | None]
 
 
 class ModelTest8(pydantic.BaseModel):
-  foo: Dict[str, Model]
+  foo: dict[str, Model]
 
 
 class ModelTest9(pydantic.BaseModel):

@@ -1,5 +1,5 @@
 import json
-from typing import Type, TypeVar
+from typing import TypeVar
 
 import pydantic
 from aiohttp import web
@@ -19,7 +19,7 @@ class Request[MatchInfoType, BodyType, QueryType](BaseModel):
   query: QueryType
 
   @classmethod
-  async def from_request(cls: Type[RequestType], request: web.Request) -> RequestType:
+  async def from_request(cls: type[RequestType], request: web.Request) -> RequestType:
     text = await request.text()
     body = json.loads(text) if text else {}
 

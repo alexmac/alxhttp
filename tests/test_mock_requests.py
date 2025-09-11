@@ -5,7 +5,6 @@ import unittest
 from unittest.mock import ANY
 
 import aiohttp
-import aiohttp.abc
 import pytest
 from aiohttp.test_utils import make_mocked_request
 from multidict import CIMultiDict
@@ -13,14 +12,7 @@ from pydantic import ValidationError
 
 from alxhttp.tests.multipart_bytes_writer import MultipartBytesWriter
 from alxhttp.tests.stream_reader import BytesStreamReader, JSONStreamReader
-from example.server import (
-  ExampleServer,
-  handler_test_custom_sec_headers,
-  handler_test_json,
-  handler_test_multipart,
-  validated_api,
-  validated_empty_api,
-)
+from example.server import ExampleServer, handler_test_custom_sec_headers, handler_test_json, handler_test_multipart, validated_api, validated_empty_api
 
 log = logging.getLogger()
 

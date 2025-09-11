@@ -1,5 +1,5 @@
 from concurrent.futures import Executor
-from typing import Optional, TypeVar
+from typing import TypeVar
 
 import pydantic
 from aiohttp import web
@@ -16,18 +16,18 @@ class Response[ResponseType](web.Response):
     *,
     body: ResponseType,
     status: int = 200,
-    reason: Optional[str] = None,
-    headers: Optional[LooseHeaders] = None,
-    content_type: Optional[str] = 'application/json',
-    charset: Optional[str] = None,
-    zlib_executor_size: Optional[int] = None,
-    zlib_executor: Optional[Executor] = None,
+    reason: str | None = None,
+    headers: LooseHeaders | None = None,
+    content_type: str | None = 'application/json',
+    charset: str | None = None,
+    zlib_executor_size: int | None = None,
+    zlib_executor: Executor | None = None,
   ):
     super().__init__(
       body=None,
       status=status,
       reason=reason,
-      text=body.model_dump_json(),  # type: ignore
+      text=body.model_dump_json(),  # pyright: ignore[reportAttributeAccessIssue, reportUnknownArgumentType]
       headers=headers,
       content_type=content_type,
       charset=charset,

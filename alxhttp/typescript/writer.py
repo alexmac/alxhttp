@@ -1,6 +1,7 @@
 import pathlib
 import subprocess
-from typing import List, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import humps
 
@@ -13,7 +14,7 @@ from alxhttp.typescript.wrappers.gen_post_wrapper import generate_post_api_wrapp
 from alxhttp.typescript.wrappers.gen_ws_wrapper import generate_ws_api_wrapper
 
 
-def gen_ts_for_route(route_details: RouteDetails, base_path: str = '.', base_url: str = 'http://127.0.0.1:8081/', pretty: bool = False, generated_files: set | None = None) -> None:
+def gen_ts_for_route(route_details: RouteDetails[Any], base_path: str = '.', base_url: str = 'http://127.0.0.1:8081/', pretty: bool = False, generated_files: set[pathlib.Path] | None = None) -> None:
   root = pathlib.Path(base_path)
   if not root.exists():
     root.mkdir()
@@ -40,7 +41,7 @@ def gen_ts_for_route(route_details: RouteDetails, base_path: str = '.', base_url
 
 
 def gen_ts_for_routes(
-  routes: Sequence[ServerHandler],
+  routes: Sequence[ServerHandler[Any]],
   base_path: str = 'ts',
   base_url: str = 'http://127.0.0.1:8081/',
 ) -> None:
@@ -51,7 +52,9 @@ def gen_ts_for_routes(
   run_prettier(pathlib.Path(base_path))
 
 
-def gen_ts_for_ws_route(route_details: WSRouteDetails, base_path: str = '.', base_url: str = 'http://127.0.0.1:8081/', pretty: bool = False, generated_files: set | None = None) -> None:
+def gen_ts_for_ws_route(
+  route_details: WSRouteDetails[Any], base_path: str = '.', base_url: str = 'http://127.0.0.1:8081/', pretty: bool = False, generated_files: set[pathlib.Path] | None = None
+) -> None:
   root = pathlib.Path(base_path)
   if not root.exists():
     root.mkdir()

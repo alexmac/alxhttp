@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Awaitable, Callable, List, Optional, Type, TypeVar
+from typing import Any, Awaitable, Callable, TypeVar
 
 import humps
 from aiohttp import web
@@ -25,11 +25,11 @@ ServerMsgType = TypeVar('ServerMsgType')
 
 @dataclass
 class WSRouteDetails[ErrorType](BaseRouteDetails[ErrorType]):
-  client_msg: Type
-  server_msg: Type
+  client_msg: type
+  server_msg: type
 
 
-def get_ws_route_details(func: Callable) -> WSRouteDetails:
+def get_ws_route_details(func: Callable[..., Any]) -> WSRouteDetails[Any]:
   return WSRouteDetails(
     name=func._alxhttp_route_name,
     match_info=func._alxhttp_match_info,
@@ -47,12 +47,12 @@ class EmptyMsg(BaseModel):
 
 def ws_route(
   name: str,
-  client_msg: Type[ClientMsgType],
-  server_msg: Type[ServerMsgType],
+  client_msg: type[ClientMsgType],
+  server_msg: type[ServerMsgType],
   ts_name: str | None = None,
-  match_info: Type[MatchInfoType] = Empty,
-  query: Type[QueryType] = Empty,
-  errors: Optional[List[Type[ErrorType]]] = None,
+  match_info: type[MatchInfoType] = Empty,
+  query: type[QueryType] = Empty,
+  errors: list[type[ErrorType]] | None = None,
 ):
   def decorator(
     func: Callable[

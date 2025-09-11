@@ -3,6 +3,7 @@ import json
 import logging
 import unittest
 from datetime import datetime
+from typing import override
 from unittest.mock import ANY
 
 import aiohttp
@@ -20,6 +21,7 @@ log = logging.getLogger()
 
 
 class Foo:
+  @override
   def __str__(self):
     return 'foo'
 

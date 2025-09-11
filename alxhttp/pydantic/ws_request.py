@@ -1,4 +1,4 @@
-from typing import Type, TypeVar
+from typing import TypeVar
 
 import pydantic
 from aiohttp import web
@@ -15,7 +15,7 @@ class WSRequest[ServerMsgType, MatchInfoType, QueryType](BaseModel):
   query: QueryType
 
   @classmethod
-  async def from_request(cls: Type[WSRequestType], request: web.Request) -> WSRequestType:
+  async def from_request(cls: type[WSRequestType], request: web.Request) -> WSRequestType:
     m = cls.model_validate(
       {
         'match_info': request.match_info,
@@ -30,4 +30,4 @@ class WSRequest[ServerMsgType, MatchInfoType, QueryType](BaseModel):
     await self._ws.prepare(self._web_request)
 
   async def send(self, msg: ServerMsgType) -> None:
-    await self._ws.send_str(msg.model_dump_json())  # type: ignore
+    await self._ws.send_str(msg.model_dump_json())  # pyright: ignore[reportUnknownArgumentType, reportAttributeAccessIssue]

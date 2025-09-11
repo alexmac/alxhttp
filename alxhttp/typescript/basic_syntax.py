@@ -1,4 +1,5 @@
-from typing import Any, Iterable, List
+from collections.abc import Iterable
+from typing import Any
 
 
 def upper_first(s: str) -> str:
@@ -43,7 +44,7 @@ def drop_leading_slash(s: str) -> str:
   return s
 
 
-def jsdoc(lines: List[str | List[str]]) -> str:
+def jsdoc(lines: list[str | list[str]]) -> str:
   result = ['/**']
   for line in lines:
     if isinstance(line, str):

@@ -1,6 +1,7 @@
 import json
 import logging
-from typing import Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from aiohttp.typedefs import Handler, Middleware
 from aiohttp.web import Request, Response, StreamResponse, middleware
@@ -64,7 +65,7 @@ def req_res_logger(status_codes: Iterable[int] | None = None) -> Middleware:
   return _req_res_logger_middleware
 
 
-async def _log_request_response(logger: logging.Logger, req_id: str, request: Request, response: Response, request_body: str | dict | None) -> None:
+async def _log_request_response(logger: logging.Logger, req_id: str, request: Request, response: Response, request_body: str | dict[str, Any] | None) -> None:
   """Log request and response data as pretty JSON"""
 
   # Parse response body if possible
@@ -96,7 +97,7 @@ async def _log_request_response(logger: logging.Logger, req_id: str, request: Re
   logger.info(f'Status {response.status} - Request/Response:\n' + json.dumps(log_data, indent=2, sort_keys=True, default=json_default))
 
 
-async def _log_request_response_exception(logger: logging.Logger, req_id: str, request: Request, exception: HTTPException, request_body: str | dict | None) -> None:
+async def _log_request_response_exception(logger: logging.Logger, req_id: str, request: Request, exception: HTTPException, request_body: str | dict[str, Any] | None) -> None:
   """Log request and exception data as pretty JSON"""
 
   # Parse exception body if possible

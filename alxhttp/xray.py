@@ -1,16 +1,15 @@
 import asyncio
 import os
 from logging import Logger
-from typing import Optional
 
 import aiohttp
 from aiohttp.typedefs import Middleware
 from yarl import URL
 
 try:
-  from aws_xray_sdk.core import patch_all, xray_recorder  # pyright: ignore
-  from aws_xray_sdk.core.async_context import AsyncContext  # pyright: ignore
-  from aws_xray_sdk.ext.aiohttp.middleware import middleware as xray_middleware  # pyright: ignore
+  from aws_xray_sdk.core import patch_all, xray_recorder  # pyright: ignore[reportMissingModuleSource]
+  from aws_xray_sdk.core.async_context import AsyncContext  # pyright: ignore[reportMissingModuleSource]
+  from aws_xray_sdk.ext.aiohttp.middleware import middleware as xray_middleware  # pyright: ignore[reportMissingModuleSource]
 except ImportError:
   xray_recorder = None
   xray_middleware = None
@@ -21,7 +20,7 @@ except ImportError:
 _imdsv2_md_url = URL('http://169.254.169.254/latest')
 
 
-def get_xray_trace_id() -> Optional[str]:
+def get_xray_trace_id() -> str | None:
   if xray_recorder is not None:
     try:
       trace = xray_recorder.get_trace_entity()
@@ -32,7 +31,7 @@ def get_xray_trace_id() -> Optional[str]:
   return None
 
 
-def get_xray_middleware() -> Optional[Middleware]:
+def get_xray_middleware() -> Middleware | None:
   return xray_middleware
 
 

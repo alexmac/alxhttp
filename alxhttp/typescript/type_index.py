@@ -1,8 +1,9 @@
 import typing
 from collections import defaultdict
+from collections.abc import Generator
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Generator, List, Set, get_type_hints
+from typing import Any, get_type_hints
 
 from pydantic import BaseModel, HttpUrl
 
@@ -34,14 +35,14 @@ from alxhttp.typescript.types import SAFE_PRIMITIVE_TYPES, TSEnum, TSUndefined
 
 class PydanticError(BaseModel):
   type: str
-  loc: List[str]
+  loc: list[str]
   msg: str
   input: str
-  ctx: Dict[str, str]
+  ctx: dict[str, str]
 
 
 class PydanticErrorResp(BaseModel):
-  errors: List[PydanticError]
+  errors: list[PydanticError]
 
 
 def model_to_type(name: str, model) -> ObjectType:
@@ -57,7 +58,7 @@ def model_to_type(name: str, model) -> ObjectType:
 
 
 def nullable_union_of_toplevel_fields(name: str, models) -> ObjectType:
-  fields: List[ObjectTypeField] = []
+  fields: list[ObjectTypeField] = []
   for model in models:
     model_fields = get_type_hints(model, include_extras=True)
 
@@ -69,8 +70,8 @@ def nullable_union_of_toplevel_fields(name: str, models) -> ObjectType:
   return ObjectType(name, fields, export=False)
 
 
-def jsdoc_of_toplevel_fields(models) -> List[str]:
-  fields: List[ObjectTypeField] = []
+def jsdoc_of_toplevel_fields(models) -> list[str]:
+  fields: list[ObjectTypeField] = []
   for model in models:
     model_fields = get_type_hints(model, include_extras=True)
 
@@ -80,7 +81,7 @@ def jsdoc_of_toplevel_fields(models) -> List[str]:
   return [f'@param {{{f.decl}}} {f.name}' for f in fields]
 
 
-def extract_enum_references(enum: Dict[str, Set[str]], model) -> None:
+def extract_enum_references(enum: dict[str, set[str]], model) -> None:
   model_fields = get_type_hints(model, include_extras=True)
   for _, field_type in model_fields.items():
     if is_annotated(field_type):
@@ -93,7 +94,7 @@ def gen_wire_func(name: str, ret_type: str, object_init: ObjectInit):
   return f'export function {name}(root: any): {ret_type} {{ return {object_init} }};\n'
 
 
-def recurse_model_types(t: type, seen: Set[type] | None = None) -> Generator[type, None, None]:
+def recurse_model_types(t: type, seen: set[type] | None = None) -> Generator[type, None, None]:
   if seen is None:
     seen = set()
 
@@ -120,7 +121,7 @@ def recurse_model_types(t: type, seen: Set[type] | None = None) -> Generator[typ
       yield from recurse_model_types(field_type, seen)
 
 
-def _discrimination_expr(src_name, type_args) -> str:
+def _discrimination_expr(src_name: str, type_args: list[type]) -> str:
   discrimination_expr = ''
   first_first_name = None
   finished = False
@@ -146,18 +147,18 @@ def _discrimination_expr(src_name, type_args) -> str:
 
 @dataclass
 class TypeIndex:
-  py_to_ts: Dict[type, ObjectType] = field(default_factory=dict)
-  ts_to_py: Dict[str, type] = field(default_factory=dict)
+  py_to_ts: dict[type, ObjectType] = field(default_factory=dict)
+  ts_to_py: dict[str, type] = field(default_factory=dict)
 
-  py_to_wire_func: Dict[type, str] = field(default_factory=dict)
-  py_to_wire_func_name: Dict[type, str] = field(default_factory=dict)
+  py_to_wire_func: dict[type, str] = field(default_factory=dict)
+  py_to_wire_func_name: dict[type, str] = field(default_factory=dict)
 
-  serialize_wire_func: Dict[type, str] = field(default_factory=dict)
-  serialize_wire_func_name: Dict[type, str] = field(default_factory=dict)
+  serialize_wire_func: dict[type, str] = field(default_factory=dict)
+  serialize_wire_func_name: dict[type, str] = field(default_factory=dict)
 
-  py_to_ts_union: Dict[type, UnionType] = field(default_factory=dict)
+  py_to_ts_union: dict[type, UnionType] = field(default_factory=dict)
 
-  enum_refs = defaultdict(set)
+  enum_refs: defaultdict[str, set[str]] = defaultdict(set)
 
   def gen_enum_defs(self) -> str:
     tdefs = []
@@ -165,7 +166,7 @@ class TypeIndex:
       tdefs.append(f'enum {ename} {braces([f"{ev} = '{ev}'" for ev in sorted(evals)], sep=",")};')
     return '\n\n'.join(tdefs) + '\n\n'
 
-  def body_and_match_field_names(self, rd: RouteDetails) -> List[str]:
+  def body_and_match_field_names(self, rd: RouteDetails[Any]) -> list[str]:
     body_arg_names = [x.name for x in self.py_to_ts[rd.body].fields]
     match_info_arg_names = [x.name for x in self.py_to_ts[rd.match_info].fields]
     return match_info_arg_names + body_arg_names
@@ -333,7 +334,7 @@ class TypeIndex:
     us to do things like turn float timestamps into js Date objects.
     """
     ts_type = self.py_to_ts[py_type]
-    field_assignments: List[ObjectInitField] = []
+    field_assignments: list[ObjectInitField] = []
     for tsfield in ts_type.fields:
       field_type = self._gen_init_field_assignment(tsfield.decl.decl, f'{wire_arg}.{tsfield.name}')
       if field_type is None:
@@ -360,7 +361,7 @@ class TypeIndex:
     us to do things like turn js Date objects into float timestamps.
     """
     ts_type = self.py_to_ts[py_type]
-    field_assignments: List[ObjectInitField] = []
+    field_assignments: list[ObjectInitField] = []
     for tsfield in ts_type.fields:
       field_assignments.append(
         ObjectInitField(

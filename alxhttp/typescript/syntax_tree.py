@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import override
 
 from alxhttp.typescript.basic_syntax import braces, join, space
 from alxhttp.typescript.type_conversion import pytype_to_tstype
@@ -11,6 +11,7 @@ class Arg:
   type_decl: str | type
   default_value: str | None = field(default=None)
 
+  @override
   def __str__(self) -> str:
     if isinstance(self.type_decl, str):
       type_decl = self.type_decl
@@ -30,8 +31,9 @@ class Statement:
 @dataclass
 class Destructure(Statement):
   name: str
-  arguments: List[str]
+  arguments: list[str]
 
+  @override
   def __str__(self) -> str:
     return space(f'const {{ {join(self.arguments, sep=", ")} }} = {self.name};')
 
@@ -39,9 +41,10 @@ class Destructure(Statement):
 @dataclass
 class ReturnFuncCall(Statement):
   name: str
-  arguments: List[str]
+  arguments: list[str]
   is_async: bool = field(default=True)
 
+  @override
   def __str__(self) -> str:
     await_expr = 'await ' if self.is_async else ''
     return space(f'return {await_expr}{self.name}({{ {join(self.arguments, sep=", ")} }});')
@@ -50,8 +53,9 @@ class ReturnFuncCall(Statement):
 @dataclass
 class If(Statement):
   cond: str
-  stmts: List[Statement]
+  stmts: list[Statement]
 
+  @override
   def __str__(self) -> str:
     return space(f'if ({self.cond}) {{ {join(self.stmts)} }}')
 
@@ -59,9 +63,10 @@ class If(Statement):
 @dataclass
 class SwitchStmt(Statement):
   cond: str
-  case_stmts: List[Tuple[str, Statement]]
+  case_stmts: list[tuple[str, Statement]]
   default_stmt: Statement
 
+  @override
   def __str__(self) -> str:
     cases = join([f'case {cond}: {{ {stmt} }}' for cond, stmt in self.case_stmts] + [f'default: {{ {self.default_stmt} }}'])
 
@@ -70,17 +75,19 @@ class SwitchStmt(Statement):
 
 @dataclass
 class TryCatch(Statement):
-  try_stmts: List[Statement]
-  catch_stmts: List[Statement]
+  try_stmts: list[Statement]
+  catch_stmts: list[Statement]
 
+  @override
   def __str__(self) -> str:
     return space(f'try {{ {join(self.try_stmts)} }} catch(error: any) {{ {join(self.catch_stmts)} }}')
 
 
 @dataclass
 class AnonFuncCall(Statement):
-  statements: List[str]
+  statements: list[str]
 
+  @override
   def __str__(self) -> str:
     return space(f'() => {{ }} {{ {join(self.statements, sep="\n")} }}')
 
@@ -89,6 +96,7 @@ class AnonFuncCall(Statement):
 class CheckedParamsAccess(Statement):
   name: str
 
+  @override
   def __str__(self) -> str:
     return space(f"""const {self.name} = params.{self.name};
                  if (!{self.name}) {{ throw Error('failed to access param'); }}
@@ -99,6 +107,7 @@ class CheckedParamsAccess(Statement):
 class CheckedFormAccess(Statement):
   name: str
 
+  @override
   def __str__(self) -> str:
     return space(f"""const {self.name} = formData.get('{self.name}')?.toString();
                  if (!{self.name}) {{ throw Error('failed to access form data'); }}
@@ -109,11 +118,12 @@ class CheckedFormAccess(Statement):
 class Func:
   name: str
   return_decl: str
-  arguments: List[Arg]
-  statements: List[Statement]
+  arguments: list[Arg]
+  statements: list[Statement]
   is_async: bool = field(default=True)
   is_export: bool = field(default=False)
 
+  @override
   def __str__(self) -> str:
     export = 'export ' if self.is_export else ''
     prefix = 'async ' if self.is_async else ''
@@ -125,6 +135,7 @@ class Func:
 class RawStmt(Statement):
   stmt: str
 
+  @override
   def __str__(self) -> str:
     return self.stmt
 
@@ -135,6 +146,7 @@ class JsonPost(Statement):
   args: str
   response_type: str
 
+  @override
   def __str__(self) -> str:
     return f"""
     const response = await postJSON(`{self.url}`, {self.args});
@@ -153,6 +165,7 @@ class JsonGet(Statement):
   url: str
   response_type: str
 
+  @override
   def __str__(self) -> str:
     return f"""
     const response = await getJSON(`{self.url}`);
@@ -170,6 +183,7 @@ class JsonGet(Statement):
 class TypeDecl:
   decl: type
 
+  @override
   def __str__(self) -> str:
     if isinstance(self.decl, str):
       raise ValueError
@@ -182,6 +196,7 @@ class ObjectTypeField:
   decl: TypeDecl
   default_value: str | None
 
+  @override
   def __str__(self) -> str:
     default_value = f' = {self.default_value}' if self.default_value else ''
     return f'{self.name}: {self.decl}{default_value}'
@@ -190,9 +205,10 @@ class ObjectTypeField:
 @dataclass
 class ObjectType:
   name: str
-  fields: List[ObjectTypeField]
+  fields: list[ObjectTypeField]
   export: bool = True
 
+  @override
   def __str__(self) -> str:
     export_decl = 'export ' if self.export else ''
     if not self.fields:
@@ -203,9 +219,10 @@ class ObjectType:
 @dataclass
 class UnionType:
   name: str
-  members: List[str]
+  members: list[str]
   export: bool = True
 
+  @override
   def __str__(self) -> str:
     export_decl = 'export ' if self.export else ''
     assert self.members
@@ -217,13 +234,15 @@ class ObjectInitField:
   name: str
   value: str | None
 
+  @override
   def __str__(self) -> str:
     return f'{self.name}: {self.value}'
 
 
 @dataclass
 class ObjectInit:
-  fields: List[ObjectInitField]
+  fields: list[ObjectInitField]
 
+  @override
   def __str__(self) -> str:
     return f'{braces(self.fields, sep=",\n")}\n'

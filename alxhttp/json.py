@@ -25,7 +25,7 @@ def json_response(x: Any, status: int = 200) -> web.Response:
   return web.json_response(text=json_dumps(x), status=status)
 
 
-def json_error_response(req: Request, error: str, status_code: int, rest: dict | None = None) -> Response:
+def json_error_response(req: Request, error: str, status_code: int, rest: dict[str, Any] | None = None) -> Response:
   rest = rest or {}
 
   return json_response(

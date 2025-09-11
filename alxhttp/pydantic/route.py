@@ -1,6 +1,7 @@
+from collections.abc import Awaitable
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Awaitable, Callable, List, Optional, Type, TypeVar
+from typing import Any, Callable, TypeVar
 
 import humps
 from aiohttp import web
@@ -19,20 +20,20 @@ ErrorType = TypeVar('ErrorType', bound=ErrorModel)
 @dataclass
 class BaseRouteDetails[ErrorType]:
   name: str
-  match_info: Type
-  query: Type
+  match_info: type
+  query: type
   ts_name: str
-  errors: List[Type[ErrorType]]
+  errors: list[type[ErrorType]]
 
 
 @dataclass
 class RouteDetails[ErrorType](BaseRouteDetails[ErrorType]):
   verb: str
-  body: Type
-  response: Type
+  body: type
+  response: type
 
 
-def get_route_details(func: Callable) -> RouteDetails:
+def get_route_details(func: Callable[..., Any]) -> RouteDetails[Any]:
   return RouteDetails(
     name=func._alxhttp_route_name,
     verb=func._alxhttp_route_verb,
@@ -49,11 +50,11 @@ def route(
   verb: str,
   name: str,
   ts_name: str | None = None,
-  match_info: Type[MatchInfoType] = Empty,
-  body: Type[BodyType] = Empty,
-  query: Type[QueryType] = Empty,
-  response: Type[ResponseType] = Empty,
-  errors: Optional[List[Type[ErrorType]]] = None,
+  match_info: type[MatchInfoType] = Empty,
+  body: type[BodyType] = Empty,
+  query: type[QueryType] = Empty,
+  response: type[ResponseType] = Empty,
+  errors: list[type[ErrorType]] | None = None,
 ):
   def decorator(
     func: Callable[

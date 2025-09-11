@@ -1,7 +1,8 @@
 import asyncio
 import logging
+from collections.abc import Iterable
 from datetime import datetime
-from typing import Annotated, Dict, Iterable, List, Literal, Optional
+from typing import Annotated, Literal
 
 from aiohttp.typedefs import Middleware
 from asyncpg import create_pool
@@ -17,9 +18,9 @@ from alxhttp.sql import SQLArgValidator, SQLValidator
 
 
 class ExampleServer(Server):
-  def __init__(self, pool: Pool, middlewares: Optional[Iterable[Middleware]] = None, logger: Optional[logging.Logger] = None):
+  def __init__(self, pool: Pool, middlewares: Iterable[Middleware] | None = None, logger: logging.Logger | None = None):
     super().__init__(middlewares=middlewares, logger=logger)
-    self.pool = pool
+    self.pool: Pool = pool
 
 
 class GoogleAccount(BaseModel):
@@ -27,10 +28,10 @@ class GoogleAccount(BaseModel):
   email: str | None
   email_verified: bool | None
   hd: str | None
-  name: Optional[str]
-  picture: Optional[str]
-  given_name: Optional[str]
-  family_name: Optional[str]
+  name: str | None
+  picture: str | None
+  given_name: str | None
+  family_name: str | None
   created_at: datetime
   updated_at: datetime
 
@@ -42,7 +43,7 @@ class User(BaseModel):
   user_id: UserID
   created_at: datetime
   updated_at: datetime
-  google: Optional[GoogleAccount]
+  google: GoogleAccount | None
 
 
 OrgID = Annotated[str, prefixed_id('org_')]
@@ -53,12 +54,12 @@ class MatchInfo(BaseModel):
 
 
 class UsersWithRoles(User):
-  roles: List[str]
+  roles: list[str]
 
 
 class OrgUsers(BaseModel):
   org_id: OrgID
-  users: Dict[UserID, UsersWithRoles]
+  users: dict[UserID, UsersWithRoles]
 
 
 GET_ORG_USERS = SQLValidator('sqlserver_get_org_users.sql', OrgUsers)
@@ -111,7 +112,7 @@ GET_ORG = SQLValidator('sqlserver_get_org.sql', Org)
 )
 async def get_org(server: ExampleServer, request: Request[MatchInfo, Empty, Empty]) -> Response[Org]:
   async with server.pool.acquire() as conn:
-    orgs: List[Org] = await GET_ORG.fetch(conn, request.match_info.org_id)
+    orgs: list[Org] = await GET_ORG.fetch(conn, request.match_info.org_id)
 
   assert len(orgs) == 1
   return Response(body=orgs[0])
@@ -214,7 +215,7 @@ async def get_org_invalid(server: ExampleServer, request: Request[MatchInfo, Emp
 
 class OrgUsersList(BaseModel):
   org_id: OrgID
-  users: List[UsersWithRoles]
+  users: list[UsersWithRoles]
 
 
 GET_ORG_USERS_LIST = SQLValidator('sqlserver_get_org_users_list.sql', OrgUsersList)

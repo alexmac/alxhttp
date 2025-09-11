@@ -1,4 +1,3 @@
-from tkinter import S
 import types
 import typing
 

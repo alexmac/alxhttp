@@ -1,5 +1,5 @@
 import sys
-from typing import List, TextIO
+from typing import TextIO
 
 import humps
 
@@ -8,12 +8,14 @@ from alxhttp.pydantic.route import BaseRouteDetails, ErrorType, RouteDetails
 from alxhttp.pydantic.ws_route import WSRouteDetails
 from alxhttp.typescript.basic_syntax import braces, enlist, join, jsdoc, obj_init, parens, upper_first
 from alxhttp.typescript.syntax_tree import Arg, Destructure, Func, RawStmt, Statement
-from alxhttp.typescript.type_index import TypeIndex, extract_class, jsdoc_of_toplevel_fields, nullable_union_of_toplevel_fields, pytype_to_tstype
+from alxhttp.typescript.type_checks import extract_class
+from alxhttp.typescript.type_conversion import pytype_to_tstype
+from alxhttp.typescript.type_index import TypeIndex, jsdoc_of_toplevel_fields, nullable_union_of_toplevel_fields
 
 
-def gen_usequery_wrapper(rd: RouteDetails[ErrorType], argtype_fields: List[str], response_type_name: str, out: TextIO = sys.stdout):
+def gen_usequery_wrapper(rd: RouteDetails[ErrorType], argtype_fields: list[str], response_type_name: str, out: TextIO = sys.stdout):
   usequery_func_name = 'use' + humps.pascalize(rd.ts_name)
-  stmts: List[Statement] = [Destructure('args as ArgType', argtype_fields)]
+  stmts: list[Statement] = [Destructure('args as ArgType', argtype_fields)]
   stmts += [
     RawStmt(
       'return useQuery'
@@ -61,7 +63,7 @@ def gen_usequery_wrapper(rd: RouteDetails[ErrorType], argtype_fields: List[str],
   out.write(str(use_query_func))
 
 
-def gen_mutation_wrapper(rd: RouteDetails[ErrorType], argtype_fields: List[str], response_type_name: str, out: TextIO = sys.stdout):
+def gen_mutation_wrapper(rd: RouteDetails[ErrorType], argtype_fields: list[str], response_type_name: str, out: TextIO = sys.stdout):
   hook_arg_checks = braces(
     [f'assertVal({x})' for x in argtype_fields]
     + [

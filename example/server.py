@@ -3,9 +3,10 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from collections.abc import Iterable
 from datetime import datetime, timedelta
 from functools import partial
-from typing import Iterable, Literal, final
+from typing import Literal, final
 
 from aiohttp import BodyPartReader, MultipartReader
 from aiohttp.typedefs import Middleware
@@ -19,7 +20,8 @@ from alxhttp.pydantic.request import Request as ModelReq
 from alxhttp.pydantic.response import EmptyResponse
 from alxhttp.pydantic.response import Response as ModelResp
 from alxhttp.pydantic.route import add_route, route
-from alxhttp.pydantic.ws_route import WSRequest, add_ws_route, ws_route
+from alxhttp.pydantic.ws_request import WSRequest
+from alxhttp.pydantic.ws_route import add_ws_route, ws_route
 from alxhttp.server import Server
 from alxhttp.xray import init_xray
 
@@ -34,13 +36,14 @@ async def handler_test_json(s: ExampleServer, req: Request) -> Response:
   return json_response(d)
 
 
-async def dump_parts(log, x: MultipartReader | BodyPartReader):
+async def dump_parts(log: logging.Logger, x: MultipartReader | BodyPartReader):
   if isinstance(x, MultipartReader):
     log.info('MultipartReader')
     async for foo in x:
       if foo:
         await dump_parts(log, foo)
-  elif isinstance(x, BodyPartReader):
+  else:
+    assert isinstance(x, BodyPartReader)
     log.info('BodyPartReader')
     async for bar in x:
       log.info(bar)
@@ -243,7 +246,7 @@ def loads_clientmsg(msg: str) -> ClientWSMsgs:
     raise ValueError('oops')
 
 
-@ws_route('/api/ws/test', match_info=Empty, client_msg=ClientWSMsgs, server_msg=ServerMsgs)  # type: ignore
+@ws_route('/api/ws/test', match_info=Empty, client_msg=ClientWSMsgs, server_msg=ServerMsgs)  # pyright: ignore[reportArgumentType]
 async def ws_test(server: ExampleServer, request: WSRequest[ServerMsgs, Empty, Empty]) -> WebSocketResponse:
   await request.prepare_ws()
 

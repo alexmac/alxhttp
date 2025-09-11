@@ -1,7 +1,7 @@
 import json
 import typing
 from datetime import datetime
-from typing import Annotated, Any, Dict, List, Optional, Tuple, Type, TypeVar, get_type_hints
+from typing import Annotated, Any, ClassVar, TypeVar, get_type_hints
 
 import asyncpg
 import pydantic
@@ -12,17 +12,17 @@ from alxhttp.typescript.type_checks import TypeType, is_dict, is_list, is_model_
 from alxhttp.typescript.types import TSEnum
 
 
-def recursive_json_loads(type: TypeType, data) -> Any:
+def recursive_json_loads(typ: TypeType, data: Any) -> Any:
   """
   json loads anything that requires recursive model verification
   """
 
   # Unwrap optionals
-  if is_optional(type):
-    targs = typing.get_args(type)
+  if is_optional(typ):
+    targs = typing.get_args(typ)
     return recursive_json_loads(targs[0], data)
 
-  if is_union_of_models(type):
+  if is_union_of_models(typ):
     # TODO: stronger checking on the union models
     if isinstance(data, str):
       return json.loads(data)
@@ -31,18 +31,18 @@ def recursive_json_loads(type: TypeType, data) -> Any:
     else:
       assert False
 
-  if isinstance(data, str) and (is_dict(type) or is_list(type) or is_model_type(type)):
-    return recursive_json_loads(type, json.loads(data))
+  if isinstance(data, str) and (is_dict(typ) or is_list(typ) or is_model_type(typ)):
+    return recursive_json_loads(typ, json.loads(data))
 
   if isinstance(data, dict):
-    assert is_dict(type) or is_model_type(type)
+    assert is_dict(typ) or is_model_type(typ)
 
     for k, v in data.items():
-      if is_model_type(type):
-        t = get_type_hints(type).get(k)
+      if is_model_type(typ):
+        t = get_type_hints(typ).get(k)
       else:
-        assert is_dict(type)
-        t = typing.get_args(type)[1]
+        assert is_dict(typ)
+        t = typing.get_args(typ)[1]
 
       # likely a mistake with the model/record that will be caught by pydantic
       if not t:
@@ -50,9 +50,9 @@ def recursive_json_loads(type: TypeType, data) -> Any:
 
       data[k] = recursive_json_loads(t, v)
   elif isinstance(data, list):
-    assert is_list(type)
-    type = typing.get_args(type)[0]
-    data = [recursive_json_loads(type, d) for d in data]
+    assert is_list(typ)
+    typ = typing.get_args(typ)[0]
+    data = [recursive_json_loads(typ, d) for d in data]
 
   return data
 
@@ -60,7 +60,7 @@ def recursive_json_loads(type: TypeType, data) -> Any:
 BaseModelType = TypeVar('BaseModelType', bound='BaseModel')
 
 
-def replace_datetime_values_with_timestamps(value: Dict | List) -> Dict | List:
+def replace_datetime_values_with_timestamps(value: dict[str, Any] | list[Any] | Any) -> dict[str, Any] | list[Any]:
   if isinstance(value, dict):
     for k, v in value.items():
       if isinstance(v, datetime):
@@ -79,7 +79,7 @@ class BaseModel(pydantic.BaseModel):
   - datetimes are serialized as float timestamps
   """
 
-  model_config = pydantic.ConfigDict(extra='forbid')
+  model_config: ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra='forbid')
 
   @pydantic.field_serializer('*', mode='wrap')
   def datetimes_as_timestamps(self, value: Any, nxt: pydantic.SerializerFunctionWrapHandler) -> Any:
@@ -91,7 +91,7 @@ class BaseModel(pydantic.BaseModel):
       return nxt(value)
 
   @classmethod
-  def from_record(cls: Type[BaseModelType], record: asyncpg.Record | None) -> BaseModelType:
+  def from_record(cls: type[BaseModelType], record: asyncpg.Record | None) -> BaseModelType:
     if not record:
       raise HTTPNotFound()
     record_dict = dict(record)
@@ -117,9 +117,9 @@ class ErrorModel(BaseModel):
 
   error: str = 'HTTPBadRequest'
   status_code: int = 400
-  request_id: Optional[str] = None
+  request_id: str | None = None
 
-  def exception(self):
+  def exception(self):  # pyright: ignore[reportIncompatibleMethodOverride, reportImplicitOverride]
     """
     Wrap the model in an exception that will render as JSON
 
@@ -143,7 +143,7 @@ class BaseModelException[BaseModelType](HTTPSuccessful):
   status_code: int = 200
 
   def __init__(self, model: BaseModelType, status_code: int = 200):
-    self.model: BaseModel = model  # type: ignore | this is at the limits of python's type checker
+    self.model: BaseModel = model  # pyright: ignore[reportAttributeAccessIssue] | this is at the limits of python's type checker
     self.status_code = status_code
 
     # Unusual to perform this last, but we need status_code set correctly before calling it
@@ -165,7 +165,7 @@ class ErrorModelException[ErrorModelType](HTTPError):
   status_code: int = 400
 
   def __init__(self, model: ErrorModelType):
-    self.model: ErrorModel = model  # type: ignore | this is at the limits of python's type checker
+    self.model: ErrorModel = model  # pyright: ignore[reportAttributeAccessIssue] | this is at the limits of python's type checker
     self.status_code = self.model.status_code
     if not self.model.request_id:
       req = get_request()
@@ -181,10 +181,10 @@ class PydanticErrorDetails(BaseModel):
   """
 
   type: str
-  loc: List[int | str]
+  loc: list[int | str]
   msg: str
   input: str
-  ctx: Optional[Dict[str, str]] = None
+  ctx: dict[str, str] | None = None
 
 
 class PydanticValidationError(ErrorModel):
@@ -193,8 +193,8 @@ class PydanticValidationError(ErrorModel):
   """
 
   error: Annotated[str, TSEnum('ErrorCode', 'PydanticValidationError')] = 'PydanticValidationError'
-  errors: List[PydanticErrorDetails]
+  errors: list[PydanticErrorDetails]
 
 
-def fix_loc_list(loc: Tuple[int | str, ...]) -> List[int | str]:
+def fix_loc_list(loc: tuple[int | str | Any, ...]) -> list[int | str]:
   return [x if isinstance(x, int) or isinstance(x, str) else str(x) for x in loc]

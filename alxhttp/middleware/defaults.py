@@ -1,5 +1,3 @@
-from typing import List
-
 from aiohttp.typedefs import Middleware
 
 from alxhttp.middleware.assign_req_id import assign_req_id
@@ -10,8 +8,8 @@ from alxhttp.middleware.unhandled_errors import unhandled_errors
 from alxhttp.xray import get_xray_middleware
 
 
-def default_middleware(include_xray: bool = False) -> List[Middleware]:
-  middlewares: List[Middleware] = [
+def default_middleware(include_xray: bool = False) -> list[Middleware]:
+  middlewares: list[Middleware] = [
     assign_req_id,
     security_headers,
     unhandled_errors,

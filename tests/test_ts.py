@@ -4,7 +4,7 @@ import pathlib
 import tempfile
 import unittest
 from datetime import datetime
-from typing import Annotated, Any, ClassVar, Dict, List, Literal, Optional, Tuple
+from typing import Annotated, Any, ClassVar, Literal, TextIO
 
 from pydantic import Field
 
@@ -43,20 +43,20 @@ class Opt(BaseModel):
 class User(BaseModel):
   user_id: str
   name: str | None
-  roles: List[str]
-  options: Dict[str, Opt]
-  maybe_options: Dict[str, Opt] | None
-  deep_opts: Dict[str, Dict[str, Dict[str, Dict[str, Opt]]]]
-  opt_union: Optional[str | int]
-  tups: Tuple[str, str]
+  roles: list[str]
+  options: dict[str, Opt]
+  maybe_options: dict[str, Opt] | None
+  deep_opts: dict[str, dict[str, dict[str, dict[str, Opt]]]]
+  opt_union: str | int | None
+  tups: tuple[str, str]
   alts: Literal['foo', 'bar']
 
 
 class Org(BaseModel):
   org_id: str
   created_at: datetime
-  users: List[User]
-  maybe_users: Optional[List[User]]
+  users: list[User]
+  maybe_users: list[User] | None
 
 
 class RecursiveType(BaseModel):
@@ -67,7 +67,7 @@ type SomeID = str
 
 
 class DoubleDict(BaseModel):
-  foo: Dict[SomeID, Dict[str, Any]]
+  foo: dict[SomeID, dict[str, Any]]
 
 
 class Mem1(BaseModel):
@@ -94,12 +94,12 @@ class WSMsg(BaseModel):
 
 
 class CanvasItemUpdate(WSMsg):
-  type: Literal['update_item']
+  type: Literal['update_item']  # pyright: ignore[reportIncompatibleVariableOverride]
   foo: int
 
 
 class CanvasItemDelete(WSMsg):
-  type: Literal['delete_item']
+  type: Literal['delete_item']  # pyright: ignore[reportIncompatibleVariableOverride]
   item_id: str
 
 
@@ -120,7 +120,7 @@ class Holder(BaseModel):
 cur_dir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
 
 
-def _snapshot_typeindex(ti: TypeIndex, out):
+def _snapshot_typeindex(ti: TypeIndex, out: TextIO):
   out.write(shared_defs())
   for v in ti.py_to_ts.values():
     out.write(str(v))
@@ -167,7 +167,7 @@ class TestTS(unittest.IsolatedAsyncioTestCase):
     snapshot = cur_dir / 'test_ts.snapshot.ts'
     ti = TypeIndex()
     for t in [WithDefaultsAndAnnotations, Opt, User, Org, RecursiveType, DoubleDict, Holder, ServerMsg, Blah, ResourceCardData]:
-      ti.recurse_model(t, init_from_wire=True, init_to_wire=True)
+      ti.recurse_model(t, init_from_wire=True, init_to_wire=True)  # pyright: ignore[reportArgumentType]
     snapshot_compare(ti, snapshot)
 
   async def test_route_wrappers(self):

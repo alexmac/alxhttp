@@ -1,14 +1,15 @@
 import sys
-from typing import List, TextIO
+from typing import Any, TextIO
 
 from alxhttp.pydantic.route import ErrorType, RouteDetails
 from alxhttp.typescript.basic_syntax import drop_leading_slash, jsdoc, python_to_js_string_template
 from alxhttp.typescript.syntax_tree import Arg, Destructure, Func, If, RawStmt, SwitchStmt
-from alxhttp.typescript.type_index import jsdoc_of_toplevel_fields, pytype_to_tstype
+from alxhttp.typescript.type_conversion import pytype_to_tstype
+from alxhttp.typescript.type_index import jsdoc_of_toplevel_fields
 from alxhttp.typescript.wrappers.wrappers import gen_mutation_wrapper, gen_serialize_wire_funcs, gen_usequery_wrapper, gen_writer_imports, setup_typeindex
 
 
-def gen_fetch_post_wrapper(rd: RouteDetails, base_url: str, argtype_fields: List[str], response_type_name: str, out: TextIO):
+def gen_fetch_post_wrapper(rd: RouteDetails[Any], base_url: str, argtype_fields: list[str], response_type_name: str, out: TextIO):
   api_url = f'${{base_url}}{drop_leading_slash(python_to_js_string_template(rd.name))}'
 
   tf = Func(

@@ -1,3 +1,5 @@
+from typing import Any
+
 from aiohttp.web_exceptions import HTTPBadRequest as WebHTTPBadRequest
 
 from alxhttp.json import json_dumps
@@ -10,7 +12,7 @@ class HTTPBadRequest(WebHTTPBadRequest):
   represent the exception, but the pydantic approach is the preferred approach
   """
 
-  def __init__(self, message: dict):
+  def __init__(self, message: dict[str, Any]):
     request = get_request()
     request_id = get_request_id(request) if request else None
 

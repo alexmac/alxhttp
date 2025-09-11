@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import override
 
 from aiohttp.web_request import Request
 from aiohttp.web_response import Response
@@ -21,12 +21,12 @@ async def secure_hset(redis: redis.Redis, name: str, secure_value: str) -> str:
   """
   cookie_value = gen_prefixed_id(f'{name}_', num_bytes=32)
 
-  await redis.hset(name=name, key=cookie_value, value=secure_value.encode())
+  await redis.hset(name=name, key=cookie_value, value=secure_value.encode())  # pyright: ignore[reportGeneralTypeIssues, reportArgumentType]
 
   return cookie_value
 
 
-async def secure_hget(redis: redis.Redis, name: str, cookie_value: str) -> Optional[str]:
+async def secure_hget(redis: redis.Redis, name: str, cookie_value: str) -> str | None:
   """
   Using a hash map called {name} this retrieves the secure_value via the randomly named
   cookie value. The main usecase is storing the random key in a browser cookie
@@ -36,9 +36,9 @@ async def secure_hget(redis: redis.Redis, name: str, cookie_value: str) -> Optio
   if not cookie_value.startswith(f'{name}_'):
     raise ValueError('cookie_value is malformed')
 
-  res = await redis.hget(name=name, key=cookie_value)
+  res = await redis.hget(name=name, key=cookie_value)  # pyright: ignore[reportGeneralTypeIssues]
 
-  return res.decode() if res else None
+  return res.decode() if res else None  # pyright: ignore[reportAttributeAccessIssue]
 
 
 @dataclass
@@ -72,6 +72,7 @@ class HiddenCookie(PlainCookie):
   query to see if the hidden cookie is currently set.
   """
 
+  @override
   def set(self, res: Response, cookie_value: str, expiry_delta: timedelta | None = None) -> None:
     if not expiry_delta:
       expiry_delta = self.expiry_delta
@@ -81,9 +82,11 @@ class HiddenCookie(PlainCookie):
     res.set_cookie(str(self.name), cookie_value, secure=True, httponly=True, samesite='Strict', expires=expires)
     res.set_cookie(f'{self.name}_is_set', '1', secure=True, httponly=False, samesite='Lax', expires=expires)
 
+  @override
   def get(self, req: Request) -> str | None:
     return req.cookies.get(self.name)
 
+  @override
   def unset(self, res: Response) -> None:
     res.del_cookie(self.name)
     res.del_cookie(f'{self.name}_is_set')
