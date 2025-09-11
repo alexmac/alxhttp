@@ -12,4 +12,5 @@ uv run pyright --createstub alxhttp
 rsync -a typings/alxhttp/ alxhttp/
 rm -rf typings
 uv build
+find alxhttp |  grep pyi | xargs rm
 twine upload dist/*

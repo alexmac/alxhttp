@@ -32,11 +32,13 @@ ListType = TypeVar('ListType')
 
 class SQLValidator[T: BaseModel]:
   def __init__(self, file: str | Path, cls: Type[T], stack_offset: int = 2):
-    self.file = get_caller_dir(stack_offset) / file
-    self._query = None
+    super().__init__()
+    self.file: Path = get_caller_dir(stack_offset) / file
+    self._query: str | None = None
+    self.cls: Type[T] = cls
+
     if modified_recently(self.file):
       self.validate()
-    self.cls = cls
     register_file_listener(self.file, self.validate)
 
   def __str__(self) -> str:
@@ -46,6 +48,7 @@ class SQLValidator[T: BaseModel]:
   def query(self) -> str:
     if not self._query:
       self.validate()
+      assert self._query
 
     return self._query
 
@@ -81,7 +84,7 @@ class SQLArgValidator[T: BaseModel, **P, PT](SQLValidator):
     This also gives a natural place to perform some type conversions
     """
     ordered = []
-    for field_name in self.argorder.model_fields.keys():
+    for field_name in self.argorder.model_fields.keys():  # pyright: ignore[reportFunctionMemberAccess]
       arg = kwargs[field_name]
       if isinstance(arg, BaseModel):
         arg = arg.model_dump_json()

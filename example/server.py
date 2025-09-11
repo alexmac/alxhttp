@@ -5,7 +5,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from functools import partial
-from typing import Iterable, Literal, Optional
+from typing import Iterable, Literal, final
 
 from aiohttp import BodyPartReader, MultipartReader
 from aiohttp.typedefs import Middleware
@@ -144,8 +144,9 @@ class RespType(MatchInfo, Body):
   pass
 
 
+@final
 class ExampleServer(Server):
-  def __init__(self, middlewares: Optional[Iterable[Middleware]] = None, logger: Optional[logging.Logger] = None):
+  def __init__(self, middlewares: Iterable[Middleware] | None = None, logger: logging.Logger | None = None):
     super().__init__(middlewares=middlewares, logger=logger)
 
     self.app.router.add_get(r'/api/test', partial(handler_test_api, self))
@@ -200,12 +201,12 @@ class ServerWSMsg(BaseModel):
 
 
 class ServerWSMsgA(ServerWSMsg):
-  type: Literal['test_msg_a']
+  type: Literal['test_msg_a']  # pyright: ignore[reportIncompatibleVariableOverride]
   foo: int
 
 
 class ServerWSMsgB(ServerWSMsg):
-  type: Literal['test_msg_b']
+  type: Literal['test_msg_b']  # pyright: ignore[reportIncompatibleVariableOverride]
   bar: datetime
 
 
@@ -220,12 +221,12 @@ class ClientWSMsg(BaseModel):
 
 
 class ClientWSMsgA(ClientWSMsg):
-  type: Literal['test_client_msg_a']
+  type: Literal['test_client_msg_a']  # pyright: ignore[reportIncompatibleVariableOverride]
   foo: int
 
 
 class ClientWSMsgB(ClientWSMsg):
-  type: Literal['test_client_msg_b']
+  type: Literal['test_client_msg_b']  # pyright: ignore[reportIncompatibleVariableOverride]
   bar: datetime
 
 

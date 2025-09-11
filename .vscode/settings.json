@@ -4,23 +4,25 @@
   "editor.insertSpaces": true,
   "editor.detectIndentation": false,
   "editor.fontLigatures": "'ss02', 'zero'",
+  "editor.wordWrap": "on",
   "debug.toolBarLocation": "commandCenter",
   "coverage-gutters.coverageReportFileName": "output/coverage/index.html",
   "coverage-gutters.coverageBaseDir": "output/coverage",
-  "coverage-gutters.coverageFileNames": [
-    "coverage.xml"
-  ],
+  "coverage-gutters.coverageFileNames": ["coverage.xml"],
+  "ruff.nativeServer": true,
+  "html.suggest.html5": true,
   "python.analysis.typeCheckingMode": "basic",
-  "python.testing.pytestArgs": [
-    "tests"
-  ],
+  "python.analysis.diagnosticMode": "workspace",
+  "cursorpyright.analysis.typeCheckingMode": "basic",
+  "cursorpyright.analysis.diagnosticMode": "workspace",
+  "python.testing.pytestArgs": ["tests"],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.codeActionsOnSave": {
       "source.fixAll": "explicit",
-      "source.organizeImports": "explicit",
+      "source.organizeImports": "explicit"
     }
   },
   "Prettier-SQL.commaPosition": "before",
@@ -34,5 +36,5 @@
   "Prettier-SQL.SQLFlavourOverride": "postgresql",
   "Prettier-SQL.tabulateAlias": true,
   "cSpell.includeRegExpList": ["CStyleComment", "string"],
-  "cSpell.ignoreRegExpList": ["from.*"]
+  "cSpell.ignoreRegExpList": ["from.*"],
 }

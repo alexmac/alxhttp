@@ -8,7 +8,7 @@ from multidict import CIMultiDict
 class MultipartBytesWriter(aiohttp.abc.AbstractStreamWriter):
   data: bytes = b''
 
-  async def write(self, chunk: bytes) -> None:
+  async def write(self, chunk: bytes | bytearray | memoryview) -> None:
     self.data += chunk
 
   async def write_eof(self, chunk: bytes = b'') -> None:
@@ -17,7 +17,7 @@ class MultipartBytesWriter(aiohttp.abc.AbstractStreamWriter):
   async def drain(self) -> None:
     raise NotImplementedError()  # pragma: nocover
 
-  def enable_compression(self, encoding: str = 'deflate') -> None:
+  def enable_compression(self, encoding: str = 'deflate', strategy: int | None = None) -> None:
     raise NotImplementedError()  # pragma: nocover
 
   def enable_chunking(self) -> None:

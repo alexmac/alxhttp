@@ -38,12 +38,13 @@ def req_res_logger(status_codes: Iterable[int] | None = None) -> Middleware:
 
     # Capture request body
     request_body = None
+    body_text: str | None = None
     try:
       body_text = await request.text()
       if body_text:
         request_body = json.loads(body_text)
     except Exception:
-      request_body = body_text if 'body_text' in locals() else None
+      request_body = body_text
 
     try:
       resp = await handler(request)

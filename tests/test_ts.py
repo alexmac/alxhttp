@@ -24,11 +24,15 @@ UPDATE_SNAPSHOTS = False
 prettier_opts = ['--trailing-comma', 'es5']
 
 
+class TestAnnotation:
+  pass
+
+
 class WithDefaultsAndAnnotations(BaseModel):
   foo: str = 'hello'
   val: str = Field(default='world')
   blah: Annotated[str, 'someconst']
-  fff: Annotated[str, BaseModel]
+  fff: Annotated[str, TestAnnotation]
 
 
 class Opt(BaseModel):

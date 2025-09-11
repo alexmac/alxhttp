@@ -51,7 +51,7 @@ def model_to_type(name: str, model) -> ObjectType:
     td = TypeDecl(field_type)
     if is_class_var(field_type):
       continue
-    fields.append(ObjectTypeField(field_name, TypeDecl(field_type), None))
+    fields.append(ObjectTypeField(field_name, td, None))
 
   return ObjectType(name, fields)
 
@@ -179,7 +179,7 @@ class TypeIndex:
         if init_from_wire:
           self.init_discriminated_union_from_wire(union_type)
       elif is_class_var(m):
-        continue # ignore these
+        continue  # ignore these
       else:
         ts_name = extract_class(m)
         t = model_to_type(ts_name, m)
@@ -192,7 +192,7 @@ class TypeIndex:
         if init_to_wire:
           self.init_to_wire(m)
 
-  def _gen_init_field_assignment(self, type: type, src_name: str = 'root', depth: int = 0) -> str|None:
+  def _gen_init_field_assignment(self, type: type, src_name: str = 'root', depth: int = 0) -> str | None:
     depth += 1
 
     kn = f'k{depth}'
@@ -244,7 +244,7 @@ class TypeIndex:
     else:
       raise ValueError
 
-  def _gen_uninit_field_assignment(self, type: type, src_name: str = 'root', depth: int = 0) -> str|None:
+  def _gen_uninit_field_assignment(self, type: type, src_name: str = 'root', depth: int = 0) -> str | None:
     depth += 1
 
     kn = f'k{depth}'
