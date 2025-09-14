@@ -26,7 +26,7 @@ def is_model_type(t: TypeType) -> bool:
 
 
 def is_union(t: TypeType) -> bool:
-  return typing.get_origin(t) in {typing.Union, types.UnionType}
+  return typing.get_origin(t) in {typing.Union, types.UnionType}  # pyright: ignore[reportDeprecated]
 
 
 def is_alias(t: TypeType) -> typing.TypeGuard[typing.TypeAliasType]:
@@ -35,6 +35,16 @@ def is_alias(t: TypeType) -> typing.TypeGuard[typing.TypeAliasType]:
 
 def is_class_var(t: TypeType) -> bool:
   return typing.get_origin(t) == typing.ClassVar
+
+
+def is_class_var_or_annotated_class_var(t: TypeType) -> bool:
+  return is_class_var(t)
+  # res = is_class_var(t) or (is_annotated(t) and is_class_var(typing.get_args(t)[0]))
+  # if res:
+  #   print(str(t))
+  # if str(t) == 'typing.ClassVar[str]':
+  #   print('is_class_var_or_annotated_class_var', t)
+  # return res
 
 
 def is_optional(t: TypeType) -> bool:
@@ -62,26 +72,26 @@ def get_literal(t: TypeType) -> str | int:
   return typing.get_args(t)[0]
 
 
-def get_literals(t: TypeType) -> typing.List[str | int]:
+def get_literals(t: TypeType) -> list[str | int]:
   assert is_literal(t)
   return list(typing.get_args(t))
 
 
-def is_list(t: TypeType) -> typing.TypeGuard[typing.List]:
-  return t is list or typing.get_origin(t) in {list, typing.List}
+def is_list(t: TypeType) -> typing.TypeGuard[list[typing.Any]]:
+  return t is list or typing.get_origin(t) in {list, typing.List}  # pyright: ignore[reportDeprecated]
 
 
-def is_tuple(t: TypeType) -> typing.TypeGuard[tuple]:
+def is_tuple(t: TypeType) -> typing.TypeGuard[tuple[typing.Any, ...]]:
   return typing.get_origin(t) is tuple
 
 
-def is_dict(t: TypeType) -> typing.TypeGuard[typing.Dict]:
-  return t is dict or typing.get_origin(t) in {dict, typing.Dict}
+def is_dict(t: TypeType) -> typing.TypeGuard[dict[typing.Any, typing.Any]]:
+  return t is dict or typing.get_origin(t) in {dict, typing.Dict}  # pyright: ignore[reportDeprecated]
 
 
 def is_union_with_none(t: TypeType) -> bool:
   # This is a more general version of is_optional
-  return typing.get_origin(t) in {typing.Union, types.UnionType} and any([x == types.NoneType for x in typing.get_args(t)])
+  return typing.get_origin(t) in {typing.Union, types.UnionType} and any([x == types.NoneType for x in typing.get_args(t)])  # pyright: ignore[reportDeprecated]
 
 
 def is_union_of_models(t: TypeType) -> bool:

@@ -45,7 +45,7 @@ def gen_ts_for_routes(
   base_path: str = 'ts',
   base_url: str = 'http://127.0.0.1:8081/',
 ) -> None:
-  generated_files = set()
+  generated_files: set[pathlib.Path] = set()
   for route_handler in routes:
     route_details = get_route_details(route_handler)
     gen_ts_for_route(route_details, base_path=base_path, base_url=base_url, generated_files=generated_files)
@@ -67,18 +67,18 @@ def gen_ts_for_ws_route(
 
   print(f'regenerating: {ts_file}')
   with open(ts_file, 'w') as f:
-    generate_ws_api_wrapper(route_details, out=f, base_url=base_url)
+    generate_ws_api_wrapper(route_details, out=f)
     f.flush()
   if pretty:
     run_prettier(ts_file)
 
 
 def gen_ts_for_ws_routes(
-  routes: Sequence[ServerHandler],
+  routes: Sequence[ServerHandler[Any]],
   base_path: str = 'ts',
   base_url: str = 'http://127.0.0.1:8081/',
 ) -> None:
-  generated_files = set()
+  generated_files: set[pathlib.Path] = set()
   for route_handler in routes:
     route_details = get_ws_route_details(route_handler)
     gen_ts_for_ws_route(route_details, base_path=base_path, base_url=base_url, generated_files=generated_files)

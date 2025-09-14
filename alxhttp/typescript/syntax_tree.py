@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import override
 
 from alxhttp.typescript.basic_syntax import braces, join, space
+from alxhttp.typescript.type_checks import is_class_var_or_annotated_class_var
 from alxhttp.typescript.type_conversion import pytype_to_tstype
 
 
@@ -181,13 +182,22 @@ class JsonGet(Statement):
 
 @dataclass
 class TypeDecl:
-  decl: type
+  decl: type | str
+  self_type: type | None = None
+
+  def __init__(self, decl: type | str, self_type: type | None = None):
+    if is_class_var_or_annotated_class_var(decl):
+      print('ignoring class var', decl)
+    self.decl = decl
+    self.self_type = self_type
+    if 'Self' in str(decl) and self_type is None:
+      raise ValueError('Self type is required')
 
   @override
   def __str__(self) -> str:
     if isinstance(self.decl, str):
       raise ValueError
-    return pytype_to_tstype(self.decl)
+    return pytype_to_tstype(self.decl, self_type=self.self_type)
 
 
 @dataclass

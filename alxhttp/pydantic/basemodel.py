@@ -1,7 +1,7 @@
 import json
 import typing
 from datetime import datetime
-from typing import Annotated, Any, ClassVar, TypeVar, get_type_hints
+from typing import Annotated, Any, TypeVar, get_type_hints
 
 import asyncpg
 import pydantic
@@ -79,7 +79,7 @@ class BaseModel(pydantic.BaseModel):
   - datetimes are serialized as float timestamps
   """
 
-  model_config = pydantic.ConfigDict(extra='forbid')
+  model_config = pydantic.ConfigDict(extra='forbid')  # pyright: ignore[reportUnannotatedClassAttribute]
 
   @pydantic.field_serializer('*', mode='wrap')
   def datetimes_as_timestamps(self, value: Any, nxt: pydantic.SerializerFunctionWrapHandler) -> Any:

@@ -1,5 +1,5 @@
 import sys
-from typing import TextIO
+from typing import Any, TextIO
 
 import humps
 
@@ -118,12 +118,12 @@ def gen_writer_imports(out: TextIO):
   out.write(shared_defs())
 
 
-def gen_unions(rd: BaseRouteDetails, ti: TypeIndex, out: TextIO):
+def gen_unions(rd: BaseRouteDetails[Any], ti: TypeIndex, out: TextIO):
   for tu in ti.py_to_ts_union.values():
     out.write(str(tu))
 
 
-def gen_enums(rd: BaseRouteDetails, ti: TypeIndex, out: TextIO):
+def gen_enums(rd: BaseRouteDetails[Any], ti: TypeIndex, out: TextIO):
   error_types = rd.errors + [ErrorModel, PydanticValidationError]
   for e in error_types:
     ti.recurse_model(e, init_from_wire=True, init_to_wire=False)
@@ -145,7 +145,7 @@ def gen_enums(rd: BaseRouteDetails, ti: TypeIndex, out: TextIO):
   out.write('const RequestError = { error: ErrorCode.RequestError, status_code: -1, request_id: null};\n\n')
 
 
-def gen_arg_types(rd: RouteDetails, ti: TypeIndex, out: TextIO):
+def gen_arg_types(rd: RouteDetails[Any], ti: TypeIndex, out: TextIO):
   out.write(f'type ArgType = {pytype_to_tstype(rd.match_info)} & {pytype_to_tstype(rd.body)};\n\n')
 
   x = nullable_union_of_toplevel_fields('HookArgs', [rd.match_info, rd.body])
