@@ -141,13 +141,20 @@ def recurse_model_types(t: type, seen: set[type] | None = None) -> Generator[typ
         continue
       yield from recurse_model_types(field_type, seen)
 
+def _first_real_field(subtype: type) -> tuple[str, type]:
+  model_fields = get_type_hints(subtype)
+  for first_name, field_type in model_fields.items():
+    if should_skip_field(field_type):
+      continue
+    return first_name, field_type
+  assert False
 
 def _discrimination_expr(src_name: str, type_args: list[type]) -> str:
   discrimination_expr = ''
   first_first_name = None
   finished = False
   for n, subtype in enumerate(type_args):
-    first_name, first_field_type = list(get_type_hints(subtype).items())[0]
+    first_name, first_field_type = _first_real_field(subtype)
     if not first_first_name:
       first_first_name = first_name
     assert first_name == first_first_name  # simplifying assumption: all subtypes will have a common first literal key
