@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, get_type_hints
 
+import pydantic
 from pydantic import BaseModel, HttpUrl
 from pydantic.types import AwareDatetime
 
@@ -47,11 +48,21 @@ class PydanticErrorResp(BaseModel):
   errors: list[PydanticError]
 
 
+def should_skip_field(field_type: type) -> bool:
+  if is_class_var_or_annotated_class_var(field_type):
+    return True
+  elif field_type == pydantic.ConfigDict:
+    return True
+  elif is_annotated(field_type) and typing.get_args(field_type)[0] == pydantic.ConfigDict:
+    return True
+  return False
+
+
 def model_to_type(name: str, model) -> ObjectType:
   model_fields = get_type_hints(model, include_extras=True)
   fields = []
   for field_name, field_type in model_fields.items():
-    if is_class_var_or_annotated_class_var(field_type):
+    if should_skip_field(field_type):
       continue
     td = TypeDecl(field_type, self_type=model)
     fields.append(ObjectTypeField(field_name, td, None))
@@ -65,8 +76,8 @@ def nullable_union_of_toplevel_fields(name: str, models) -> ObjectType:
     model_fields = get_type_hints(model, include_extras=True)
 
     for field_name, field_type in model_fields.items():
-      if is_class_var_or_annotated_class_var(field_type):
-        continue  # ignore these
+      if should_skip_field(field_type):
+        continue
       if not is_optional(field_type):
         field_type = field_type | None | TSUndefined
       fields.append(ObjectTypeField(field_name, TypeDecl(field_type, self_type=model), None))
@@ -80,8 +91,8 @@ def jsdoc_of_toplevel_fields(models) -> list[str]:
     model_fields = get_type_hints(model, include_extras=True)
 
     for field_name, field_type in model_fields.items():
-      if is_class_var_or_annotated_class_var(field_type):
-        continue  # ignore these
+      if should_skip_field(field_type):
+        continue
       fields.append(ObjectTypeField(field_name, TypeDecl(field_type, self_type=model), None))
 
   return [f'@param {{{f.decl}}} {f.name}' for f in fields]
@@ -90,8 +101,8 @@ def jsdoc_of_toplevel_fields(models) -> list[str]:
 def extract_enum_references(enum: dict[str, set[str]], model) -> None:
   model_fields = get_type_hints(model, include_extras=True)
   for _, field_type in model_fields.items():
-    if is_class_var_or_annotated_class_var(field_type):
-        continue  # ignore these
+    if should_skip_field(field_type):
+      continue
     if is_annotated(field_type):
       targs = typing.get_args(field_type)
       if isinstance(targs[1], TSEnum):
@@ -110,7 +121,7 @@ def recurse_model_types(t: type, seen: set[type] | None = None) -> Generator[typ
     return
   seen.add(t)
 
-  if is_class_var_or_annotated_class_var(t):
+  if should_skip_field(t):
     return
 
   if is_alias(t):
@@ -126,8 +137,8 @@ def recurse_model_types(t: type, seen: set[type] | None = None) -> Generator[typ
 
     model_fields = get_type_hints(t)
     for _, field_type in model_fields.items():
-      if is_class_var_or_annotated_class_var(field_type):
-        continue  # ignore these
+      if should_skip_field(field_type):
+        continue
       yield from recurse_model_types(field_type, seen)
 
 
@@ -183,12 +194,11 @@ class TypeIndex:
 
   def recurse_model(self, mt: type, init_from_wire: bool = True, init_to_wire: bool = True) -> None:
     for m in recurse_model_types(mt):
-      if is_class_var_or_annotated_class_var(m):
-        continue  # ignore these
+      if should_skip_field(m):
+        continue
       elif is_alias(m) and is_union_of_models(m.__value__):
         type_name = str(m)
         union_type = m.__value__
-        assert not is_class_var_or_annotated_class_var(union_type)
         self.py_to_ts_union[union_type] = UnionType(type_name, members=[extract_class(c) for c in typing.get_args(union_type)], export=True)
         if init_from_wire:
           self.init_discriminated_union_from_wire(union_type)
@@ -250,7 +260,9 @@ class TypeIndex:
       assert is_type_or_annotated_type(type_args[0], str)
       ktype = pytype_to_tstype(type_args[0])
       vtype = pytype_to_tstype(type_args[1])
-      return f'Object.fromEntries(Object.entries({src_name} as Record<{ktype}, {vtype}>).map(([{kn}, {vn}]) => {{ return [{kn}, {self._gen_init_field_assignment(type_args[1], vn, depth, self_type)}] }} ))'
+      return (
+        f'Object.fromEntries(Object.entries({src_name} as Record<{ktype}, {vtype}>).map(([{kn}, {vn}]) => {{ return [{kn}, {self._gen_init_field_assignment(type_args[1], vn, depth, self_type)}] }} ))'
+      )
     elif is_model_type(type):
       return f'get{pytype_to_tstype(type)}FromWire({src_name})'
     elif type == typing.Self:
@@ -259,7 +271,7 @@ class TypeIndex:
     else:
       raise ValueError
 
-  def _gen_uninit_field_assignment(self, type: type, src_name: str = 'root', depth: int = 0) -> str | None:
+  def _gen_uninit_field_assignment(self, type: type, src_name: str = 'root', depth: int = 0, self_type: type | None = None) -> str | None:
     depth += 1
 
     kn = f'k{depth}'
@@ -268,7 +280,7 @@ class TypeIndex:
     type_args = typing.get_args(type)
 
     if is_annotated(type):
-      return self._gen_uninit_field_assignment(type_args[0], src_name, depth)
+      return self._gen_uninit_field_assignment(type_args[0], src_name, depth, self_type)
     elif type in SAFE_PRIMITIVE_TYPES:
       return src_name
     elif is_literal(type):
@@ -277,17 +289,20 @@ class TypeIndex:
       return f'{src_name}.getTime()'
     elif type == Any:
       return src_name
-    elif is_class_var_or_annotated_class_var(type):
+    elif should_skip_field(type):
       return None
+    elif type == typing.Self:
+      assert self_type is not None
+      return self._gen_uninit_field_assignment(self_type, src_name, depth, self_type)
     elif is_alias(type):
-      return self._gen_uninit_field_assignment(type.__value__, src_name, depth)
+      return self._gen_uninit_field_assignment(type.__value__, src_name, depth, self_type)
     elif is_list(type) or is_tuple(type):
       # TODO: ignoring tuple types
-      return f'{src_name}.map(({vn}: {pytype_to_tstype(type_args[0])}) => {{ return {self._gen_uninit_field_assignment(type_args[0], vn, depth)} }})'
+      return f'{src_name}.map(({vn}: {pytype_to_tstype(type_args[0], self_type=self_type)}) => {{ return {self._gen_uninit_field_assignment(type_args[0], vn, depth, self_type)} }})'
     elif is_union_of_safe_primitive_types_or_none(type):
       return src_name
     elif is_optional(type):
-      sub = self._gen_uninit_field_assignment(type_args[0], src_name, depth)
+      sub = self._gen_uninit_field_assignment(type_args[0], src_name, depth, self_type)
       if sub is None:
         return None
       return f'({src_name} === null) ? null : ' + sub
@@ -305,10 +320,10 @@ class TypeIndex:
           if isinstance(literal_value, str):
             literal_value = f"'{literal_value}'"
 
-          discrimination_expr += f'({src_name}.{first_name} === {literal_value}) ? convert{pytype_to_tstype(subtype)}ToWire({src_name}) : '
+          discrimination_expr += f'({src_name}.{first_name} === {literal_value}) ? convert{pytype_to_tstype(subtype, self_type=self_type)}ToWire({src_name}) : '
         elif n == len(type_args) - 1:
           finished = True
-          discrimination_expr += f'convert{pytype_to_tstype(subtype)}ToWire({src_name})'
+          discrimination_expr += f'convert{pytype_to_tstype(subtype, self_type=self_type)}ToWire({src_name})'
 
       if not finished:
         discrimination_expr += ' unreachable()'
@@ -320,13 +335,13 @@ class TypeIndex:
       assert is_type_or_annotated_type(type_args[0], str)
       ktype = pytype_to_tstype(type_args[0])
       vtype = pytype_to_tstype(type_args[1])
-      sub = self._gen_uninit_field_assignment(type_args[1], vn, depth)
+      sub = self._gen_uninit_field_assignment(type_args[1], vn, depth, self_type)
       if sub is None:
         return None
       return f'Object.fromEntries(Object.entries({src_name} as Record<{ktype}, {vtype}>).map(([{kn}, {vn}]) => {{ return [{kn}, {sub}] }} ))'
 
     elif is_model_type(type):
-      return f'convert{pytype_to_tstype(type)}ToWire({src_name})'
+      return f'convert{pytype_to_tstype(type, self_type=self_type)}ToWire({src_name})'
     else:
       raise ValueError
 
@@ -380,7 +395,7 @@ class TypeIndex:
       field_assignments.append(
         ObjectInitField(
           tsfield.name,
-          self._gen_uninit_field_assignment(tsfield.decl.decl, f'{wire_arg}.{tsfield.name}'),
+          self._gen_uninit_field_assignment(tsfield.decl.decl, f'{wire_arg}.{tsfield.name}', self_type=py_type),
         )
       )
 

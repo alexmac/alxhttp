@@ -65,7 +65,13 @@ export type Mem2 = { service_id: "mem2"; foo: string };
 
 export type Mem3 = { service_id: string; foo: string };
 
-export type ServerMsg = { data: CanvasItemDelete | CanvasItemUpdate };
+export type ServerMsg = {
+  data:
+    | CanvasItemDelete
+    | CanvasItemFixItem
+    | CanvasItemFoxItem
+    | CanvasItemUpdate;
+};
 
 export type CanvasItemUpdate = {
   type: "update_item";
@@ -78,6 +84,20 @@ export type CanvasItemDelete = {
   stream: null | string;
   item_id: string;
 };
+
+export type CanvasItemFixItem = {
+  type: "fix_item";
+  stream: null | string;
+  item_id: string;
+};
+
+export type CanvasItemFoxItem = {
+  type: "fox_item";
+  stream: null | string;
+  item_id: string;
+};
+
+export type TreeNode = { foo: string; children: TreeNode[] };
 
 export type ResourceCardData = Mem1 | Mem2 | Mem3;
 
@@ -235,7 +255,11 @@ export function getServerMsgFromWire(root: any): ServerMsg {
         ? getCanvasItemUpdateFromWire(root.data)
         : root.data.type === "delete_item"
           ? getCanvasItemDeleteFromWire(root.data)
-          : unreachable(),
+          : root.data.type === "fix_item"
+            ? getCanvasItemFixItemFromWire(root.data)
+            : root.data.type === "fox_item"
+              ? getCanvasItemFoxItemFromWire(root.data)
+              : unreachable(),
   };
 }
 
@@ -247,12 +271,29 @@ export function getCanvasItemDeleteFromWire(root: any): CanvasItemDelete {
   return { type: root.type, stream: root.stream, item_id: root.item_id };
 }
 
+export function getCanvasItemFixItemFromWire(root: any): CanvasItemFixItem {
+  return { type: root.type, stream: root.stream, item_id: root.item_id };
+}
+
+export function getCanvasItemFoxItemFromWire(root: any): CanvasItemFoxItem {
+  return { type: root.type, stream: root.stream, item_id: root.item_id };
+}
+
 export function getBlahFromWire(root: any): Blah {
   return root.service_id === "mem1"
     ? getMem1FromWire(root)
     : root.service_id === "mem2"
       ? getMem2FromWire(root)
       : unreachable();
+}
+
+export function getTreeNodeFromWire(root: any): TreeNode {
+  return {
+    foo: root.foo,
+    children: root.children.map((v1: TreeNode) => {
+      return getTreeNodeFromWire(v1);
+    }),
+  };
 }
 
 export function convertWithDefaultsAndAnnotationsToWire(
@@ -403,7 +444,11 @@ export function convertServerMsgToWire(root: any): ServerMsg {
         ? convertCanvasItemUpdateToWire(root.data)
         : root.data.type === "delete_item"
           ? convertCanvasItemDeleteToWire(root.data)
-          : unreachable(),
+          : root.data.type === "fix_item"
+            ? convertCanvasItemFixItemToWire(root.data)
+            : root.data.type === "fox_item"
+              ? convertCanvasItemFoxItemToWire(root.data)
+              : unreachable(),
   };
 }
 
@@ -413,4 +458,21 @@ export function convertCanvasItemUpdateToWire(root: any): CanvasItemUpdate {
 
 export function convertCanvasItemDeleteToWire(root: any): CanvasItemDelete {
   return { type: root.type, stream: root.stream, item_id: root.item_id };
+}
+
+export function convertCanvasItemFixItemToWire(root: any): CanvasItemFixItem {
+  return { type: root.type, stream: root.stream, item_id: root.item_id };
+}
+
+export function convertCanvasItemFoxItemToWire(root: any): CanvasItemFoxItem {
+  return { type: root.type, stream: root.stream, item_id: root.item_id };
+}
+
+export function convertTreeNodeToWire(root: any): TreeNode {
+  return {
+    foo: root.foo,
+    children: root.children.map((v1: TreeNode) => {
+      return convertTreeNodeToWire(v1);
+    }),
+  };
 }

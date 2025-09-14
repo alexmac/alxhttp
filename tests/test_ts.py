@@ -4,9 +4,9 @@ import pathlib
 import tempfile
 import unittest
 from datetime import datetime
-from typing import Annotated, Any, ClassVar, Literal, TextIO
+from typing import Annotated, Any, ClassVar, Literal, Self, TextIO
 
-from pydantic import Field
+from pydantic import ConfigDict, Field
 
 from alxhttp.pydantic.basemodel import BaseModel
 from alxhttp.pydantic.route import get_route_details
@@ -19,7 +19,7 @@ from example.sqlserver import create_org, create_org_2, delete_org, get_users_fo
 
 log = logging.getLogger()
 
-UPDATE_SNAPSHOTS = False
+UPDATE_SNAPSHOTS = True
 
 prettier_opts = ['--trailing-comma', 'es5']
 
@@ -103,9 +103,26 @@ class CanvasItemDelete(WSMsg):
   item_id: str
 
 
+class CanvasItemFixItem(WSMsg):
+  model_config = ConfigDict(extra='forbid')
+  type: Literal['fix_item']  # pyright: ignore[reportIncompatibleVariableOverride]
+  item_id: str
+
+
+class CanvasItemFoxItem(WSMsg):
+  model_config: ClassVar[ConfigDict] = ConfigDict(extra='forbid')
+  type: Literal['fox_item']  # pyright: ignore[reportIncompatibleVariableOverride]
+  item_id: str
+
+
 class ServerMsg(BaseModel):
-  data: CanvasItemUpdate | CanvasItemDelete
+  data: CanvasItemUpdate | CanvasItemDelete | CanvasItemFixItem | CanvasItemFoxItem
   ignore_me: ClassVar[str] = 'fff'
+
+
+class TreeNode(BaseModel):
+  foo: str
+  children: list[Self]
 
 
 type ResourceCardData = Mem1 | Mem2 | Mem3
@@ -166,7 +183,7 @@ class TestTS(unittest.IsolatedAsyncioTestCase):
   async def test_ts_types(self):
     snapshot = cur_dir / 'test_ts.snapshot.ts'
     ti = TypeIndex()
-    for t in [WithDefaultsAndAnnotations, Opt, User, Org, RecursiveType, DoubleDict, Holder, ServerMsg, Blah, ResourceCardData]:
+    for t in [WithDefaultsAndAnnotations, Opt, User, Org, RecursiveType, DoubleDict, Holder, ServerMsg, Blah, ResourceCardData, TreeNode]:
       ti.recurse_model(t, init_from_wire=True, init_to_wire=True)  # pyright: ignore[reportArgumentType]
     snapshot_compare(ti, snapshot)
 

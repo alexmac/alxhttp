@@ -38,13 +38,7 @@ def is_class_var(t: TypeType) -> bool:
 
 
 def is_class_var_or_annotated_class_var(t: TypeType) -> bool:
-  return is_class_var(t)
-  # res = is_class_var(t) or (is_annotated(t) and is_class_var(typing.get_args(t)[0]))
-  # if res:
-  #   print(str(t))
-  # if str(t) == 'typing.ClassVar[str]':
-  #   print('is_class_var_or_annotated_class_var', t)
-  # return res
+  return is_class_var(t) or (is_annotated(t) and is_class_var(typing.get_args(t)[0]))
 
 
 def is_optional(t: TypeType) -> bool:
