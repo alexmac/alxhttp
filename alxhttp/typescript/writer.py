@@ -85,7 +85,7 @@ def gen_ts_for_ws_routes(
   run_prettier(pathlib.Path(base_path))
 
 
-def run_prettier(path: pathlib.Path, should_raise: bool = True, opts: List[str] | None = None) -> None:
+def run_prettier(path: pathlib.Path, should_raise: bool = True, opts: list[str] | None = None) -> None:
   if not opts:
     opts = []
 

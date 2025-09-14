@@ -158,7 +158,7 @@ class TypeIndex:
 
   py_to_ts_union: dict[type, UnionType] = field(default_factory=dict)
 
-  enum_refs: defaultdict[str, set[str]] = defaultdict(set)
+  enum_refs: defaultdict[str, set[str]] = field(default_factory=lambda: defaultdict(set))
 
   def gen_enum_defs(self) -> str:
     tdefs = []

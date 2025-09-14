@@ -79,7 +79,7 @@ class BaseModel(pydantic.BaseModel):
   - datetimes are serialized as float timestamps
   """
 
-  model_config: ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra='forbid')
+  model_config = pydantic.ConfigDict(extra='forbid')
 
   @pydantic.field_serializer('*', mode='wrap')
   def datetimes_as_timestamps(self, value: Any, nxt: pydantic.SerializerFunctionWrapHandler) -> Any:
