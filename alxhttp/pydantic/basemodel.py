@@ -39,7 +39,7 @@ def recursive_json_loads(typ: TypeType, data: Any) -> Any:
 
     for k, v in data.items():
       if is_model_type(typ):
-        t = get_type_hints(typ).get(k)
+        t = get_type_hints(typ).get(k)  # pyright: ignore[reportUnknownArgumentType]
       else:
         assert is_dict(typ)
         t = typing.get_args(typ)[1]
@@ -66,10 +66,19 @@ def replace_datetime_values_with_timestamps(value: dict[str, Any] | list[Any] | 
       if isinstance(v, datetime):
         value[k] = v.timestamp()
       elif isinstance(v, dict) or isinstance(v, list):
-        value[k] = replace_datetime_values_with_timestamps(v)
+        value[k] = replace_datetime_values_with_timestamps(v)  # pyright: ignore[reportUnknownArgumentType]
   elif isinstance(value, list):
-    value = [replace_datetime_values_with_timestamps(v) for v in value]
+    value = [replace_datetime_values_with_timestamps(v) for v in value]  # pyright: ignore[reportUnknownArgumentType]
   return value
+
+
+def serialize_datetimes_as_timestamps(value: Any, nxt: pydantic.SerializerFunctionWrapHandler) -> Any:
+  if isinstance(value, datetime):
+    return value.timestamp()
+  elif isinstance(value, dict) or isinstance(value, list):
+    return replace_datetime_values_with_timestamps(value)  # pyright: ignore[reportUnknownArgumentType]
+  else:
+    return nxt(value)
 
 
 class BaseModel(pydantic.BaseModel):
@@ -81,14 +90,9 @@ class BaseModel(pydantic.BaseModel):
 
   model_config = pydantic.ConfigDict(extra='forbid')  # pyright: ignore[reportUnannotatedClassAttribute]
 
-  @pydantic.field_serializer('*', mode='wrap')
+  @pydantic.field_serializer('*', mode='wrap', when_used='json')
   def datetimes_as_timestamps(self, value: Any, nxt: pydantic.SerializerFunctionWrapHandler) -> Any:
-    if isinstance(value, datetime):
-      return value.timestamp()
-    elif isinstance(value, dict) or isinstance(value, list):
-      return replace_datetime_values_with_timestamps(value)
-    else:
-      return nxt(value)
+    return serialize_datetimes_as_timestamps(value, nxt)
 
   @classmethod
   def from_record(cls: type[BaseModelType], record: asyncpg.Record | None) -> BaseModelType:
