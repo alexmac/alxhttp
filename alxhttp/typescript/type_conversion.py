@@ -1,6 +1,7 @@
 import types
 import typing
 from datetime import datetime
+from typing import TypeAliasType
 
 from pydantic.types import AwareDatetime
 
@@ -8,7 +9,7 @@ from alxhttp.typescript.type_checks import extract_class, get_literals, is_alias
 from alxhttp.typescript.types import SAFE_PRIMITIVE_TYPES, TSEnum, TSRaw, TSUndefined
 
 
-def pytype_to_tstype(t: type, self_type: type | None = None) -> str:
+def pytype_to_tstype(t: type | TypeAliasType, self_type: type | TypeAliasType | None = None) -> str:
   if t == typing.Self:
     if self_type is None:
       raise ValueError('Self type is required')

@@ -3,7 +3,7 @@ from collections import defaultdict
 from collections.abc import Generator
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, get_type_hints
+from typing import Any, TypeAliasType, get_type_hints
 
 import pydantic
 from pydantic import BaseModel, HttpUrl
@@ -48,21 +48,23 @@ class PydanticErrorResp(BaseModel):
   errors: list[PydanticError]
 
 
-def should_skip_field(field_type: type) -> bool:
+def should_skip_field(field_name: str, field_type: type | TypeAliasType) -> bool:
   if is_class_var_or_annotated_class_var(field_type):
     return True
   elif field_type == pydantic.ConfigDict:
+    return True
+  elif field_name.startswith('_'):
     return True
   elif is_annotated(field_type) and typing.get_args(field_type)[0] == pydantic.ConfigDict:
     return True
   return False
 
 
-def model_to_type(name: str, model) -> ObjectType:
+def model_to_type(name: str, model: Any) -> ObjectType:
   model_fields = get_type_hints(model, include_extras=True)
-  fields = []
+  fields: list[ObjectTypeField] = []
   for field_name, field_type in model_fields.items():
-    if should_skip_field(field_type):
+    if should_skip_field(field_name, field_type):
       continue
     td = TypeDecl(field_type, self_type=model)
     fields.append(ObjectTypeField(field_name, td, None))
@@ -70,13 +72,18 @@ def model_to_type(name: str, model) -> ObjectType:
   return ObjectType(name, fields)
 
 
-def nullable_union_of_toplevel_fields(name: str, models) -> ObjectType:
+def _get_arg_list(t: type | TypeAliasType) -> list[type | TypeAliasType]:
+  args = typing.get_args(t)
+  return list(args)
+
+
+def nullable_union_of_toplevel_fields(name: str, models: list[Any]) -> ObjectType:
   fields: list[ObjectTypeField] = []
   for model in models:
     model_fields = get_type_hints(model, include_extras=True)
 
     for field_name, field_type in model_fields.items():
-      if should_skip_field(field_type):
+      if should_skip_field(field_name, field_type):
         continue
       if not is_optional(field_type):
         field_type = field_type | None | TSUndefined
@@ -85,23 +92,23 @@ def nullable_union_of_toplevel_fields(name: str, models) -> ObjectType:
   return ObjectType(name, fields, export=False)
 
 
-def jsdoc_of_toplevel_fields(models) -> list[str]:
+def jsdoc_of_toplevel_fields(models: list[Any]) -> list[str]:
   fields: list[ObjectTypeField] = []
   for model in models:
     model_fields = get_type_hints(model, include_extras=True)
 
     for field_name, field_type in model_fields.items():
-      if should_skip_field(field_type):
+      if should_skip_field(field_name, field_type):
         continue
       fields.append(ObjectTypeField(field_name, TypeDecl(field_type, self_type=model), None))
 
   return [f'@param {{{f.decl}}} {f.name}' for f in fields]
 
 
-def extract_enum_references(enum: dict[str, set[str]], model) -> None:
+def extract_enum_references(enum: dict[str, set[str]], model: Any) -> None:
   model_fields = get_type_hints(model, include_extras=True)
-  for _, field_type in model_fields.items():
-    if should_skip_field(field_type):
+  for field_name, field_type in model_fields.items():
+    if should_skip_field(field_name, field_type):
       continue
     if is_annotated(field_type):
       targs = typing.get_args(field_type)
@@ -113,7 +120,7 @@ def gen_wire_func(name: str, ret_type: str, object_init: ObjectInit):
   return f'export function {name}(root: any): {ret_type} {{ return {object_init} }};\n'
 
 
-def recurse_model_types(t: type, seen: set[type] | None = None) -> Generator[type, None, None]:
+def recurse_model_types(t: type | TypeAliasType, seen: set[type | TypeAliasType] | None = None) -> Generator[type | TypeAliasType, None, None]:
   if seen is None:
     seen = set()
 
@@ -121,7 +128,7 @@ def recurse_model_types(t: type, seen: set[type] | None = None) -> Generator[typ
     return
   seen.add(t)
 
-  if should_skip_field(t):
+  if should_skip_field('', t):
     return
 
   if is_alias(t):
@@ -136,20 +143,22 @@ def recurse_model_types(t: type, seen: set[type] | None = None) -> Generator[typ
     yield t
 
     model_fields = get_type_hints(t)
-    for _, field_type in model_fields.items():
-      if should_skip_field(field_type):
+    for field_name, field_type in model_fields.items():
+      if should_skip_field(field_name, field_type):
         continue
       yield from recurse_model_types(field_type, seen)
 
-def _first_real_field(subtype: type) -> tuple[str, type]:
+
+def _first_real_field(subtype: type | TypeAliasType) -> tuple[str, type | TypeAliasType]:
   model_fields = get_type_hints(subtype)
   for first_name, field_type in model_fields.items():
-    if should_skip_field(field_type):
+    if should_skip_field(first_name, field_type):
       continue
     return first_name, field_type
   assert False
 
-def _discrimination_expr(src_name: str, type_args: list[type]) -> str:
+
+def _discrimination_expr(src_name: str, type_args: list[type | TypeAliasType]) -> str:
   discrimination_expr = ''
   first_first_name = None
   finished = False
@@ -175,21 +184,21 @@ def _discrimination_expr(src_name: str, type_args: list[type]) -> str:
 
 @dataclass
 class TypeIndex:
-  py_to_ts: dict[type, ObjectType] = field(default_factory=dict)
-  ts_to_py: dict[str, type] = field(default_factory=dict)
+  py_to_ts: dict[type | TypeAliasType, ObjectType] = field(default_factory=dict)
+  ts_to_py: dict[str, type | TypeAliasType] = field(default_factory=dict)
 
-  py_to_wire_func: dict[type, str] = field(default_factory=dict)
-  py_to_wire_func_name: dict[type, str] = field(default_factory=dict)
+  py_to_wire_func: dict[type | TypeAliasType, str] = field(default_factory=dict)
+  py_to_wire_func_name: dict[type | TypeAliasType, str] = field(default_factory=dict)
 
-  serialize_wire_func: dict[type, str] = field(default_factory=dict)
-  serialize_wire_func_name: dict[type, str] = field(default_factory=dict)
+  serialize_wire_func: dict[type | TypeAliasType, str] = field(default_factory=dict)
+  serialize_wire_func_name: dict[type | TypeAliasType, str] = field(default_factory=dict)
 
-  py_to_ts_union: dict[type, UnionType] = field(default_factory=dict)
+  py_to_ts_union: dict[type | TypeAliasType, UnionType] = field(default_factory=dict)
 
   enum_refs: defaultdict[str, set[str]] = field(default_factory=lambda: defaultdict(set))
 
   def gen_enum_defs(self) -> str:
-    tdefs = []
+    tdefs: list[str] = []
     for ename, evals in self.enum_refs.items():
       tdefs.append(f'enum {ename} {braces([f"{ev} = '{ev}'" for ev in sorted(evals)], sep=",")};')
     return '\n\n'.join(tdefs) + '\n\n'
@@ -201,7 +210,7 @@ class TypeIndex:
 
   def recurse_model(self, mt: type, init_from_wire: bool = True, init_to_wire: bool = True) -> None:
     for m in recurse_model_types(mt):
-      if should_skip_field(m):
+      if should_skip_field('', m):
         continue
       elif is_alias(m) and is_union_of_models(m.__value__):
         type_name = str(m)
@@ -221,13 +230,13 @@ class TypeIndex:
         if init_to_wire:
           self.init_to_wire(m)
 
-  def _gen_init_field_assignment(self, type: type, src_name: str = 'root', depth: int = 0, self_type: type | None = None) -> str | None:
+  def _gen_init_field_assignment(self, type: type | TypeAliasType, src_name: str = 'root', depth: int = 0, self_type: type | TypeAliasType | None = None) -> str | None:
     depth += 1
 
     kn = f'k{depth}'
     vn = f'v{depth}'
 
-    type_args = typing.get_args(type)
+    type_args = _get_arg_list(type)
 
     if is_annotated(type):
       return self._gen_init_field_assignment(type_args[0], src_name, depth, self_type)
@@ -237,7 +246,7 @@ class TypeIndex:
       return src_name
     elif is_literal(type):
       return src_name
-    elif type == datetime or type == AwareDatetime:
+    elif type == datetime or type == AwareDatetime:  # pyright: ignore[reportUnnecessaryComparison]
       return f'new Date({src_name} * 1000)'
     elif type == Any:
       return src_name
@@ -278,7 +287,7 @@ class TypeIndex:
     else:
       raise ValueError
 
-  def _gen_uninit_field_assignment(self, type: type, src_name: str = 'root', depth: int = 0, self_type: type | None = None) -> str | None:
+  def _gen_uninit_field_assignment(self, type: type | TypeAliasType, src_name: str = 'root', depth: int = 0, self_type: type | TypeAliasType | None = None) -> str | None:
     depth += 1
 
     kn = f'k{depth}'
@@ -292,11 +301,11 @@ class TypeIndex:
       return src_name
     elif is_literal(type):
       return src_name
-    elif type == datetime or type == AwareDatetime:
+    elif type == datetime or type == AwareDatetime:  # pyright: ignore[reportUnnecessaryComparison]
       return f'{src_name}.getTime()'
     elif type == Any:
       return src_name
-    elif should_skip_field(type):
+    elif should_skip_field('', type):
       return None
     elif type == typing.Self:
       assert self_type is not None
@@ -354,7 +363,7 @@ class TypeIndex:
 
   def init_discriminated_union_from_wire(self, py_type: type, wire_arg: str = 'root') -> str:
     ts_type = self.py_to_ts_union[py_type]
-    de = _discrimination_expr(wire_arg, typing.get_args(py_type))
+    de = _discrimination_expr(wire_arg, _get_arg_list(py_type))
 
     wire_func_name = f'get{ts_type.name}FromWire'
     wire_func = f'export function {wire_func_name}(root: any): {ts_type.name} {{ return {de} }};\n'
@@ -364,7 +373,7 @@ class TypeIndex:
 
     return wire_func
 
-  def init_from_wire(self, py_type: type, wire_arg: str = 'root') -> str:
+  def init_from_wire(self, py_type: type | TypeAliasType, wire_arg: str = 'root') -> str:
     """
     Inits a new JS object based on one that came via json over the wire. Allows
     us to do things like turn float timestamps into js Date objects.
@@ -372,6 +381,7 @@ class TypeIndex:
     ts_type = self.py_to_ts[py_type]
     field_assignments: list[ObjectInitField] = []
     for tsfield in ts_type.fields:
+      assert not isinstance(tsfield.decl.decl, str)
       field_type = self._gen_init_field_assignment(tsfield.decl.decl, f'{wire_arg}.{tsfield.name}', depth=0, self_type=py_type)
       if field_type is None:
         continue
@@ -391,7 +401,7 @@ class TypeIndex:
 
     return wire_func
 
-  def init_to_wire(self, py_type: type, wire_arg: str = 'root') -> str:
+  def init_to_wire(self, py_type: type | TypeAliasType, wire_arg: str = 'root') -> str:
     """
     Inits a new JS object to be sent over the wire. Allows
     us to do things like turn js Date objects into float timestamps.
@@ -399,6 +409,7 @@ class TypeIndex:
     ts_type = self.py_to_ts[py_type]
     field_assignments: list[ObjectInitField] = []
     for tsfield in ts_type.fields:
+      assert not isinstance(tsfield.decl.decl, str)
       field_assignments.append(
         ObjectInitField(
           tsfield.name,

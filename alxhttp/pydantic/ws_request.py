@@ -1,11 +1,11 @@
-from typing import TypeVar
+from typing import Self
 
 import pydantic
 from aiohttp import web
 
 from alxhttp.pydantic.basemodel import BaseModel
 
-WSRequestType = TypeVar('WSRequestType', bound='WSRequest')
+# WSRequestType = TypeVar('WSRequestType', bound='WSRequest')
 
 
 class WSRequest[ServerMsgType, MatchInfoType, QueryType](BaseModel):
@@ -15,7 +15,7 @@ class WSRequest[ServerMsgType, MatchInfoType, QueryType](BaseModel):
   query: QueryType
 
   @classmethod
-  async def from_request(cls: type[WSRequestType], request: web.Request) -> WSRequestType:
+  async def from_request(cls: type[Self], request: web.Request) -> Self:
     m = cls.model_validate(
       {
         'match_info': request.match_info,

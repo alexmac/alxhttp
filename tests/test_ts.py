@@ -104,7 +104,7 @@ class CanvasItemDelete(WSMsg):
 
 
 class CanvasItemFixItem(WSMsg):
-  model_config = ConfigDict(extra='forbid')
+  model_config: ClassVar[ConfigDict] = ConfigDict(extra='forbid')
   type: Literal['fix_item']  # pyright: ignore[reportIncompatibleVariableOverride]
   item_id: str
 
@@ -152,7 +152,7 @@ def _snapshot_typeindex(ti: TypeIndex, out: TextIO):
 
 def update_snapshot(ti: TypeIndex, path: pathlib.Path):
   with tempfile.NamedTemporaryFile('r+', suffix='.ts') as f:
-    _snapshot_typeindex(ti, f)
+    _snapshot_typeindex(ti, f)  # pyright: ignore[reportArgumentType]
     f.flush()
     f.seek(0)
     run_prettier(pathlib.Path(f.name), should_raise=True, opts=prettier_opts)
@@ -167,7 +167,7 @@ def snapshot_compare(ti: TypeIndex, path: pathlib.Path):
     update_snapshot(ti, path)
 
   with tempfile.NamedTemporaryFile('r+', suffix='.ts') as f:
-    _snapshot_typeindex(ti, f)
+    _snapshot_typeindex(ti, f)  # pyright: ignore[reportArgumentType]
     f.flush()
     f.seek(0)
     run_prettier(pathlib.Path(f.name), should_raise=True, opts=prettier_opts)

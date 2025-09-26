@@ -1,7 +1,7 @@
 import logging
 import unittest
 from datetime import datetime
-from typing import Annotated, Dict, List, Literal, Optional, Union
+from typing import Annotated, Dict, List, Literal, Optional, Union  # pyright: ignore[reportDeprecated]
 
 import pydantic
 import pytest
@@ -39,39 +39,39 @@ TestID = Annotated[str, prefixed_id('test_')]
 class TestTypeChecks(unittest.IsolatedAsyncioTestCase):
   def test_is_list(self):
     assert is_list(list)
-    assert is_list(List[str])
+    assert is_list(List[str])  # pyright: ignore[reportDeprecated]
     assert not is_list(int)
 
   def test_is_dict(self):
     assert is_dict(dict)
-    assert is_dict(Dict[str, str])
+    assert is_dict(Dict[str, str])  # pyright: ignore[reportDeprecated]
     assert not is_dict(int)
 
   def test_is_generic_type(self):
-    assert is_generic_type(Dict[str, str])
-    assert is_generic_type(Optional[str])
-    assert is_generic_type(List[str])
+    assert is_generic_type(Dict[str, str])  # pyright: ignore[reportDeprecated]
+    assert is_generic_type(Optional[str])  # pyright: ignore[reportDeprecated]
+    assert is_generic_type(List[str])  # pyright: ignore[reportDeprecated]
     assert is_generic_type(str | None)
     assert not is_generic_type(str)
 
   def test_is_optional(self):
-    assert is_optional(Optional[str])
+    assert is_optional(Optional[str])  # pyright: ignore[reportDeprecated]
     assert is_optional(str | None)
-    assert not is_optional(List[str])
-    assert not is_optional(List[str | None])
-    assert not is_optional(Dict[str, str])
+    assert not is_optional(List[str])  # pyright: ignore[reportDeprecated]
+    assert not is_optional(List[str | None])  # pyright: ignore[reportDeprecated]
+    assert not is_optional(Dict[str, str])  # pyright: ignore[reportDeprecated]
     assert not is_optional(str)
 
   def test_is_model_type(self):
     assert not is_model_type(str)
-    assert not is_model_type(Dict[str, str])
+    assert not is_model_type(Dict[str, str])  # pyright: ignore[reportDeprecated]
     assert is_model_type(MatchInfo)
     assert is_model_type(BaseModel)
     assert is_model_type(pydantic.BaseModel)
 
   def test_is_annotated(self):
     assert not is_annotated(str)
-    assert not is_annotated(Dict[str, str])
+    assert not is_annotated(Dict[str, str])  # pyright: ignore[reportDeprecated]
     assert is_annotated(TestID)
 
   def test_is_type_or_annotated_type(self):
@@ -97,11 +97,11 @@ class TestTypeChecks(unittest.IsolatedAsyncioTestCase):
     assert extract_class(pydantic.BaseModel) == 'BaseModel'
 
   def test_extract_type_param(self):
-    assert extract_type_param(Optional[str]) is str
+    assert extract_type_param(Optional[str]) is str  # pyright: ignore[reportDeprecated]
     assert extract_type_param(str | None) is str
-    assert extract_type_param(List[str]) is str
-    assert extract_type_param(List[str | None]) == str | None
-    assert extract_type_param(Dict[str, str]) is str
+    assert extract_type_param(List[str]) is str  # pyright: ignore[reportDeprecated]
+    assert extract_type_param(List[str | None]) == str | None  # pyright: ignore[reportDeprecated]
+    assert extract_type_param(Dict[str, str]) is str  # pyright: ignore[reportDeprecated]
     with pytest.raises(ValueError):
       extract_type_param(str)
       extract_type_param(str)
@@ -109,28 +109,28 @@ class TestTypeChecks(unittest.IsolatedAsyncioTestCase):
     assert extract_class(pydantic.BaseModel) == 'BaseModel'
 
   def test_is_union_with_none(self):
-    assert is_union_with_none(Optional[str])
-    assert not is_union_with_none(List[str])
+    assert is_union_with_none(Optional[str])  # pyright: ignore[reportDeprecated]
+    assert not is_union_with_none(List[str])  # pyright: ignore[reportDeprecated]
     assert is_union_with_none(str | None)
     assert not is_union_with_none(str | int)
 
   def test_is_safe_primitive_type_or_union(self):
-    assert not is_safe_primitive_type_or_union(Optional[str])  # TODO: should None be a safe primitive type?
+    assert not is_safe_primitive_type_or_union(Optional[str])  # pyright: ignore[reportDeprecated]  # TODO: should None be a safe primitive type?
     assert is_safe_primitive_type_or_union(str)
     assert is_safe_primitive_type_or_union(str | int)
-    assert is_safe_primitive_type_or_union(Union[str, int])
+    assert is_safe_primitive_type_or_union(Union[str, int])  # pyright: ignore[reportDeprecated]
     assert not is_safe_primitive_type_or_union(datetime)
 
   def test_is_union_of_safe_primitive_types(self):
-    assert not is_union_of_safe_primitive_types(Optional[str])  # TODO: should None be a safe primitive type?
+    assert not is_union_of_safe_primitive_types(Optional[str])  # pyright: ignore[reportDeprecated] # TODO: should None be a safe primitive type?
     assert not is_union_of_safe_primitive_types(str)
     assert is_union_of_safe_primitive_types(str | int)
-    assert is_union_of_safe_primitive_types(Union[str, int])
+    assert is_union_of_safe_primitive_types(Union[str, int])  # pyright: ignore[reportDeprecated]
     assert not is_union_of_safe_primitive_types(datetime)
 
   def test_is_union_of_safe_primitive_types_or_none(self):
-    assert is_union_of_safe_primitive_types_or_none(Optional[str])
+    assert is_union_of_safe_primitive_types_or_none(Optional[str])  # pyright: ignore[reportDeprecated]
     assert not is_union_of_safe_primitive_types_or_none(str)
     assert is_union_of_safe_primitive_types_or_none(str | int)
-    assert is_union_of_safe_primitive_types_or_none(Union[str, int])
+    assert is_union_of_safe_primitive_types_or_none(Union[str, int])  # pyright: ignore[reportDeprecated]
     assert not is_union_of_safe_primitive_types_or_none(datetime)

@@ -35,14 +35,14 @@ class RouteDetails[ErrorType](BaseRouteDetails[ErrorType]):
 
 def get_route_details(func: Callable[..., Any]) -> RouteDetails[Any]:
   return RouteDetails(
-    name=func._alxhttp_route_name,
-    verb=func._alxhttp_route_verb,
-    match_info=func._alxhttp_match_info,
-    response=func._alxhttp_response,
-    body=func._alxhttp_body,
-    query=func._alxhttp_query,
-    ts_name=func._alxhttp_ts_name,
-    errors=func._alxhttp_errors or [],
+    name=func._alxhttp_route_name,  # pyright: ignore[reportFunctionMemberAccess]
+    verb=func._alxhttp_route_verb,  # pyright: ignore[reportFunctionMemberAccess]
+    match_info=func._alxhttp_match_info,  # pyright: ignore[reportFunctionMemberAccess]
+    response=func._alxhttp_response,  # pyright: ignore[reportFunctionMemberAccess]
+    body=func._alxhttp_body,  # pyright: ignore[reportFunctionMemberAccess]
+    query=func._alxhttp_query,  # pyright: ignore[reportFunctionMemberAccess]
+    ts_name=func._alxhttp_ts_name,  # pyright: ignore[reportFunctionMemberAccess]
+    errors=func._alxhttp_errors or [],  # pyright: ignore[reportFunctionMemberAccess]
   )
 
 

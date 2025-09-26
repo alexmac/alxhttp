@@ -13,6 +13,11 @@ from alxhttp.middleware.defaults import default_middleware
 
 
 class Server:
+  app: web.Application
+  host: str
+  port: int
+  shutdown_event: asyncio.Event
+
   def __init__(
     self,
     middlewares: Iterable[Middleware] | None = None,
@@ -22,12 +27,12 @@ class Server:
       middlewares = default_middleware()
     if logger is None:
       logger = get_json_server_logger()
-    self.app: web.Application = web.Application(middlewares=middlewares, logger=logger)
-    self.host: str
-    self.port: int
-    self.shutdown_event: asyncio.Event = asyncio.Event()
+    self.app = web.Application(middlewares=middlewares, logger=logger)
+    self.host = ''
+    self.port = 0
+    self.shutdown_event = asyncio.Event()
 
-  async def setup_ctx(self, app: web.Application):
+  async def setup_ctx(self, app: web.Application):  # pyright: ignore[reportUnusedParameter]
     """
     Base classes should async-with all their stateful things and yield once.
     When the app shuts down it will return to this generator so they can unwind.

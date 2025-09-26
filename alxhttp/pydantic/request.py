@@ -1,12 +1,12 @@
 import json
-from typing import TypeVar
+from typing import Self, TypeVar
 
 import pydantic
 from aiohttp import web
 
 from alxhttp.pydantic.basemodel import BaseModel
 
-RequestType = TypeVar('RequestType', bound='Request')
+# RequestType = TypeVar('RequestType', bound='Request')
 MatchInfoType = TypeVar('MatchInfoType', bound=BaseModel)
 BodyType = TypeVar('BodyType', bound=BaseModel)
 QueryType = TypeVar('QueryType', bound=BaseModel)
@@ -19,7 +19,7 @@ class Request[MatchInfoType, BodyType, QueryType](BaseModel):
   query: QueryType
 
   @classmethod
-  async def from_request(cls: type[RequestType], request: web.Request) -> RequestType:
+  async def from_request(cls: type[Self], request: web.Request) -> Self:
     text = await request.text()
     body = json.loads(text) if text else {}
 
