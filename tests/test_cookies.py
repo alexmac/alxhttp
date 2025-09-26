@@ -5,9 +5,9 @@ from datetime import timedelta
 from unittest.mock import Mock
 
 import aiohttp
+import redis.asyncio as redis
 from yarl import URL
 
-import redis.asyncio as redis
 from alxhttp.cookies import RedisHiddenCookie
 from alxhttp.json import json_response
 from example.server import ExampleServer
@@ -21,7 +21,7 @@ class TestCookies(unittest.IsolatedAsyncioTestCase):
 
     async with redis.Redis(host='localhost', port=7379, db=0) as client:
       resp = json_response({})
-      await c.set(client, resp, 'topsecret')
+      await c.set(resp, 'topsecret', redis=client)
 
       assert resp.cookies['mycookie'].value.startswith('mycookie_')
       assert len(resp.cookies['mycookie'].value) == 73
@@ -30,7 +30,7 @@ class TestCookies(unittest.IsolatedAsyncioTestCase):
       req = Mock()
       # req.cookies = MagicMock()
       req.cookies.get = Mock(return_value=resp.cookies['mycookie'].value)
-      val = await c.get(client, req)
+      val = await c.get(req, redis=client)
       assert val == 'topsecret'
 
   async def test_normal_cookies(self):

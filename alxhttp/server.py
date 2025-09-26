@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from collections.abc import Awaitable, Iterable
+from collections.abc import AsyncGenerator, Awaitable, Iterable
 from typing import Callable, TypeVar
 
 from aiohttp import web
@@ -32,7 +32,7 @@ class Server:
     self.port = 0
     self.shutdown_event = asyncio.Event()
 
-  async def setup_ctx(self, app: web.Application):  # pyright: ignore[reportUnusedParameter]
+  async def setup_ctx(self, app: web.Application) -> AsyncGenerator[None, None]:
     """
     Base classes should async-with all their stateful things and yield once.
     When the app shuts down it will return to this generator so they can unwind.

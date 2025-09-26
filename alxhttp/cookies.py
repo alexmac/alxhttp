@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import override
 
+import redis.asyncio as redis
 from aiohttp.web_request import Request
 from aiohttp.web_response import Response
 
-import redis.asyncio as redis
 from alxhttp.schemas import gen_prefixed_id
 
 
@@ -50,7 +50,7 @@ class PlainCookie:
   name: str
   expiry_delta: timedelta
 
-  def set(self, res: Response, cookie_value: str, expiry_delta: timedelta | None = None) -> None:
+  async def set(self, res: Response, cookie_value: str, expiry_delta: timedelta | None = None) -> None:
     if not expiry_delta:
       expiry_delta = self.expiry_delta
 
@@ -58,10 +58,10 @@ class PlainCookie:
 
     res.set_cookie(str(self.name), cookie_value, secure=True, httponly=False, samesite='Lax', expires=expires)
 
-  def get(self, req: Request) -> str | None:
+  async def get(self, req: Request) -> str | None:
     return req.cookies.get(self.name)
 
-  def unset(self, res: Response) -> None:
+  async def unset(self, res: Response) -> None:
     res.del_cookie(self.name)
 
 
@@ -73,7 +73,7 @@ class HiddenCookie(PlainCookie):
   """
 
   @override
-  def set(self, res: Response, cookie_value: str, expiry_delta: timedelta | None = None) -> None:
+  async def set(self, res: Response, cookie_value: str, expiry_delta: timedelta | None = None) -> None:
     if not expiry_delta:
       expiry_delta = self.expiry_delta
 
@@ -83,11 +83,11 @@ class HiddenCookie(PlainCookie):
     res.set_cookie(f'{self.name}_is_set', '1', secure=True, httponly=False, samesite='Lax', expires=expires)
 
   @override
-  def get(self, req: Request) -> str | None:
+  async def get(self, req: Request) -> str | None:
     return req.cookies.get(self.name)
 
   @override
-  def unset(self, res: Response) -> None:
+  async def unset(self, res: Response) -> None:
     res.del_cookie(self.name)
     res.del_cookie(f'{self.name}_is_set')
 
@@ -100,12 +100,16 @@ class RedisHiddenCookie(HiddenCookie):
   value that can be used by the backend to lookup a truly secret value.
   """
 
-  async def set(self, redis: redis.Redis, res: Response, secure_value: str, expiry_delta: timedelta | None = None) -> None:
-    cookie_value = await secure_hset(redis, self.name, secure_value)
+  @override
+  async def set(self, res: Response, cookie_value: str, expiry_delta: timedelta | None = None, redis: redis.Redis | None = None) -> None:
+    assert redis is not None
+    cookie_value = await secure_hset(redis, self.name, cookie_value)
 
-    super().set(res, cookie_value, expiry_delta)
+    await super().set(res, cookie_value, expiry_delta)
 
-  async def get(self, redis: redis.Redis, req: Request) -> str | None:
+  @override
+  async def get(self, req: Request, redis: redis.Redis | None = None) -> str | None:
+    assert redis is not None
     cookie_value = req.cookies.get(self.name)
 
     if not cookie_value:
