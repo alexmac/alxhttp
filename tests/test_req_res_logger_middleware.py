@@ -132,22 +132,22 @@ class TestReqResLoggerMiddleware(unittest.IsolatedAsyncioTestCase):
   async def test_logs_request_data(self) -> None:
     """Test that request data is properly logged"""
 
+    async def handler_that_returns_400(request: web.Request) -> web.Response:
+      return web.json_response({'error': 'Bad request'}, status=400)
+
     # Create request with data and assign ID
     request = make_mocked_request('POST', '/test?param1=value1&param2=value2', headers={'Content-Type': 'application/json', 'Authorization': 'Bearer token123'}, app=self.app)
     set_request_id(request)
 
     # Mock request.text() to return JSON body
-    # async def mock_text():
-    #   return '{"field": "value"}'
+    async def mock_text():
+      return '{"field": "value"}'
 
-    # request.text = mock_text
+    request.text = mock_text
 
-    async def handler_that_returns_200(request: web.Request) -> web.Response:
-      return web.json_response({'success': True}, status=200)
-
-    # Run middleware with custom status codes
+    # Run middleware
     middleware = req_res_logger()
-    response = await middleware(request, handler_that_returns_200)
+    await middleware(request, handler_that_returns_400)
 
     # Check that log contains request details
     log_output = self.log_buffer.getvalue()
