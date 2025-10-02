@@ -51,6 +51,8 @@ export type OrgUsers = { org_id: string; users: Record<string, UsersWithRoles> }
 
 export type UsersWithRoles = { user_id: string; created_at: Date; updated_at: Date; google: GoogleAccount | null; roles: string[] }
 
+export type User = { user_id: string; created_at: Date; updated_at: Date; google: GoogleAccount | null }
+
 export type GoogleAccount = {
   sub: string
   email: null | string
@@ -92,6 +94,15 @@ export function getUsersWithRolesFromWire(root: any): UsersWithRoles {
     updated_at: new Date(root.updated_at * 1000),
     google: root.google === null ? null : getGoogleAccountFromWire(root.google),
     roles: root.roles,
+  }
+}
+
+export function getUserFromWire(root: any): User {
+  return {
+    user_id: root.user_id,
+    created_at: new Date(root.created_at * 1000),
+    updated_at: new Date(root.updated_at * 1000),
+    google: root.google === null ? null : getGoogleAccountFromWire(root.google),
   }
 }
 

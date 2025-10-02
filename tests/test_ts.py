@@ -19,7 +19,7 @@ from example.sqlserver import create_org, create_org_2, delete_org, get_users_fo
 
 log = logging.getLogger()
 
-UPDATE_SNAPSHOTS = True
+UPDATE_SNAPSHOTS = False
 
 prettier_opts = ['--trailing-comma', 'es5']
 

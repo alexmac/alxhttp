@@ -142,6 +142,17 @@ def recurse_model_types(t: type | TypeAliasType, seen: set[type | TypeAliasType]
   elif is_model_type(t):
     yield t
 
+    try:
+      for base in t.mro():
+        if base in seen:
+          continue
+        s = str(base)
+        if base is object or 'pydantic.main.BaseModel' in s or 'alxhttp.pydantic.basemodel.BaseModel' in s:
+          continue
+        yield from recurse_model_types(base, seen)
+    except Exception:
+      pass
+
     model_fields = get_type_hints(t)
     for field_name, field_type in model_fields.items():
       if should_skip_field(field_name, field_type):

@@ -1,5 +1,5 @@
-FROM public.ecr.aws/docker/library/debian:12-slim
-ARG POSTGRES_VERSION=16
+FROM public.ecr.aws/docker/library/debian:13-slim
+ARG POSTGRES_VERSION=18
 ENV POSTGRES_VERSION=${POSTGRES_VERSION}
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -19,14 +19,17 @@ RUN echo "UTC" > /etc/timezone && \
     ln -sf /usr/share/zoneinfo/UTC /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
 COPY apt.postgresql.org.asc /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
-RUN echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" \
+RUN echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt trixie-pgdg main" \
     > /etc/apt/sources.list.d/pgdg.list
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     postgresql-client-${POSTGRES_VERSION} \
     postgresql-${POSTGRES_VERSION} \
+    postgresql-${POSTGRES_VERSION}-pgvector \
     && \
     apt-get clean
 
@@ -45,5 +48,4 @@ RUN service postgresql start && \
 
 EXPOSE 5432
 USER postgres
-ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["/usr/lib/postgresql/16/bin/postgres",  "-D", "/var/lib/postgresql/16/main", "-c", "config_file=/etc/postgresql/16/main/postgresql.conf"]
+CMD ["/usr/lib/postgresql/18/bin/postgres",  "-D", "/var/lib/postgresql/18/main", "-c", "config_file=/etc/postgresql/18/main/postgresql.conf"]

@@ -79,6 +79,11 @@ export type CanvasItemUpdate = {
   foo: number;
 };
 
+export type WSMsg = {
+  type: "delete_item" | "update_item";
+  stream: null | string;
+};
+
 export type CanvasItemDelete = {
   type: "delete_item";
   stream: null | string;
@@ -265,6 +270,10 @@ export function getServerMsgFromWire(root: any): ServerMsg {
 
 export function getCanvasItemUpdateFromWire(root: any): CanvasItemUpdate {
   return { type: root.type, stream: root.stream, foo: root.foo };
+}
+
+export function getWSMsgFromWire(root: any): WSMsg {
+  return { type: root.type, stream: root.stream };
 }
 
 export function getCanvasItemDeleteFromWire(root: any): CanvasItemDelete {
@@ -454,6 +463,10 @@ export function convertServerMsgToWire(root: any): ServerMsg {
 
 export function convertCanvasItemUpdateToWire(root: any): CanvasItemUpdate {
   return { type: root.type, stream: root.stream, foo: root.foo };
+}
+
+export function convertWSMsgToWire(root: any): WSMsg {
+  return { type: root.type, stream: root.stream };
 }
 
 export function convertCanvasItemDeleteToWire(root: any): CanvasItemDelete {

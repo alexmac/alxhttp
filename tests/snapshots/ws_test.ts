@@ -46,9 +46,13 @@ export type Empty = Record<string, unknown>
 
 export type ClientWSMsgA = { type: 'test_client_msg_a'; foo: number }
 
+export type ClientWSMsg = { type: 'test_client_msg_a' | 'test_client_msg_b' }
+
 export type ClientWSMsgB = { type: 'test_client_msg_b'; bar: Date }
 
 export type ServerWSMsgA = { type: 'test_msg_a'; foo: number }
+
+export type ServerWSMsg = { type: 'test_msg_a' | 'test_msg_b' }
 
 export type ServerWSMsgB = { type: 'test_msg_b'; bar: Date }
 
@@ -68,6 +72,10 @@ export function getServerMsgsFromWire(root: any): ServerMsgs {
 
 export function getServerWSMsgAFromWire(root: any): ServerWSMsgA {
   return { type: root.type, foo: root.foo }
+}
+
+export function getServerWSMsgFromWire(root: any): ServerWSMsg {
+  return { type: root.type }
 }
 
 export function getServerWSMsgBFromWire(root: any): ServerWSMsgB {
