@@ -1,3 +1,4 @@
+from types import NoneType
 import typing
 from collections import defaultdict
 from collections.abc import Generator
@@ -261,6 +262,8 @@ class TypeIndex:
       return f'new Date({src_name} * 1000)'
     elif type == Any:
       return src_name
+    elif type == NoneType:
+      return None
     elif is_class_var(type):
       return None
     elif is_alias(type):

@@ -16,6 +16,8 @@ def pytype_to_tstype(t: type | TypeAliasType, self_type: type | TypeAliasType | 
     return pytype_to_tstype(self_type)
   elif is_type_or_alias(t, str):
     return 'string'
+  elif is_type_or_alias(t, bytes):
+    return 'string' # TODO: deal with bytes
   elif is_type_or_alias(t, bool):
     return 'boolean'
   elif is_type_or_alias(t, int) or is_type_or_alias(t, float):

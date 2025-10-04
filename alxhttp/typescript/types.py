@@ -1,7 +1,7 @@
 import types
 from typing import Any
 
-SAFE_PRIMITIVE_TYPES = {str, int, float, bool}
+SAFE_PRIMITIVE_TYPES = {str, int, float, bool, bytes} # TODO: deal with bytes
 
 SAFE_PRIMITIVE_TYPES_OR_NONE = SAFE_PRIMITIVE_TYPES | {types.NoneType}
 
