@@ -34,6 +34,7 @@ export type Opt = { key: string; val: null | string };
 export type User = {
   user_id: string;
   name: null | string;
+  nope: null;
   roles: string[];
   options: Record<string, Opt>;
   maybe_options: Record<string, Opt> | null;
@@ -122,6 +123,7 @@ export function getUserFromWire(root: any): User {
   return {
     user_id: root.user_id,
     name: root.name,
+    nope: root.nope,
     roles: root.roles,
     options: Object.fromEntries(
       Object.entries(root.options as Record<string, Opt>).map(([k1, v1]) => {
@@ -319,6 +321,7 @@ export function convertUserToWire(root: any): User {
   return {
     user_id: root.user_id,
     name: root.name,
+    nope: root.nope,
     roles: root.roles.map((v1: string) => {
       return v1;
     }),

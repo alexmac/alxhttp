@@ -43,6 +43,7 @@ class Opt(BaseModel):
 class User(BaseModel):
   user_id: str
   name: str | None
+  nope: None
   roles: list[str]
   options: dict[str, Opt]
   maybe_options: dict[str, Opt] | None

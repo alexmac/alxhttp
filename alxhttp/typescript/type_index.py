@@ -1,9 +1,9 @@
-from types import NoneType
 import typing
 from collections import defaultdict
 from collections.abc import Generator
 from dataclasses import dataclass, field
 from datetime import datetime
+from types import NoneType
 from typing import Any, TypeAliasType, get_type_hints
 
 import pydantic
@@ -263,7 +263,7 @@ class TypeIndex:
     elif type == Any:
       return src_name
     elif type == NoneType:
-      return None
+      return src_name
     elif is_class_var(type):
       return None
     elif is_alias(type):
@@ -314,6 +314,8 @@ class TypeIndex:
     elif type in SAFE_PRIMITIVE_TYPES:
       return src_name
     elif is_literal(type):
+      return src_name
+    elif type == NoneType:
       return src_name
     elif type == datetime or type == AwareDatetime:  # pyright: ignore[reportUnnecessaryComparison]
       return f'{src_name}.getTime()'
