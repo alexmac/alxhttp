@@ -1,6 +1,7 @@
+from collections.abc import Awaitable
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Awaitable, Callable, TypeAliasType, TypeVar
+from typing import Any, Callable, TypeAliasType, TypeVar, cast
 
 import humps
 from aiohttp import web
@@ -12,7 +13,9 @@ from pydantic import BaseModel
 from alxhttp.pydantic.basemodel import Empty, ErrorModel
 from alxhttp.pydantic.route import BaseRouteDetails
 from alxhttp.pydantic.ws_request import WSRequest
-from alxhttp.server import ServerType
+from alxhttp.server import Server
+
+# from alxhttp.server import Server, ServerType
 
 ErrorType = TypeVar('ErrorType', bound=ErrorModel)
 
@@ -45,6 +48,12 @@ class EmptyMsg(BaseModel):
   pass
 
 
+# F = TypeVar('F', bound=Callable[..., Any])
+ServerType = TypeVar('ServerType', bound=Server)
+type TypedRequestHandler[ServerType, ServerMsgType, MatchInfoType, QueryType, T] = Callable[[ServerType, WSRequest[ServerMsgType, MatchInfoType, QueryType]], Awaitable[web.WebSocketResponse]]
+type RequestHandler[ServerType] = Callable[[ServerType, WebRequest], Awaitable[StreamResponse]]
+
+
 def ws_route(
   name: str,
   client_msg: type[ClientMsgType] | TypeAliasType,
@@ -53,13 +62,10 @@ def ws_route(
   match_info: type[MatchInfoType] = Empty,
   query: type[QueryType] = Empty,
   errors: list[type[ErrorType]] | None = None,
-):
+) -> Callable[[TypedRequestHandler[ServerType, ServerMsgType, MatchInfoType, QueryType, web.WebSocketResponse]], RequestHandler[ServerType]]:
   def decorator(
-    func: Callable[
-      [ServerType, WSRequest[server_msg, match_info, query]],
-      Awaitable[web.WebSocketResponse],
-    ],
-  ):
+    func: TypedRequestHandler[ServerType, ServerMsgType, MatchInfoType, QueryType, web.WebSocketResponse],
+  ) -> RequestHandler[ServerType]:
     new_ts_name = ts_name
     if not new_ts_name:
       new_ts_name = humps.camelize(func.__name__)
@@ -77,7 +83,7 @@ def ws_route(
     setattr(wrapper, '_alxhttp_server_msg', server_msg)
     setattr(wrapper, '_alxhttp_ts_name', new_ts_name)
     setattr(wrapper, '_alxhttp_errors', errors)
-    return wrapper
+    return cast(RequestHandler[ServerType], wrapper)
 
   return decorator
 
@@ -90,4 +96,5 @@ def add_ws_route(
   route_details = get_ws_route_details(route_handler)
   handler = partial(route_handler, server)
   router.add_route('GET', route_details.name, handler)
+  print(f'- GET[ws] {route_details.name}')
   print(f'- GET[ws] {route_details.name}')
