@@ -58,7 +58,10 @@ export type RecursiveType = { child: RecursiveType | null };
 
 export type DoubleDict = { foo: Record<string, Record<string, any>> };
 
-export type Holder = { data: Mem1 | Mem2 | Mem3 };
+export type Holder = {
+  data: Mem1 | Mem2 | Mem3;
+  maybe_data: Mem1 | Mem2 | null;
+};
 
 export type Mem1 = { service_id: "mem1"; service_name: string };
 
@@ -232,6 +235,14 @@ export function getHolderFromWire(root: any): Holder {
         : root.data.service_id === "mem2"
           ? getMem2FromWire(root.data)
           : getMem3FromWire(root.data),
+    maybe_data:
+      root.maybe_data === null
+        ? null
+        : root.maybe_data.service_id === "mem1"
+          ? getMem1FromWire(root.maybe_data)
+          : root.maybe_data.service_id === "mem2"
+            ? getMem2FromWire(root.maybe_data)
+            : unreachable(),
   };
 }
 
@@ -253,6 +264,14 @@ export function getMem2FromWire(root: any): Mem2 {
 
 export function getMem3FromWire(root: any): Mem3 {
   return { service_id: root.service_id, foo: root.foo };
+}
+
+export function getBlahFromWire(root: any): Blah {
+  return root.service_id === "mem1"
+    ? getMem1FromWire(root)
+    : root.service_id === "mem2"
+      ? getMem2FromWire(root)
+      : unreachable();
 }
 
 export function getServerMsgFromWire(root: any): ServerMsg {
@@ -288,14 +307,6 @@ export function getCanvasItemFixItemFromWire(root: any): CanvasItemFixItem {
 
 export function getCanvasItemFoxItemFromWire(root: any): CanvasItemFoxItem {
   return { type: root.type, stream: root.stream, item_id: root.item_id };
-}
-
-export function getBlahFromWire(root: any): Blah {
-  return root.service_id === "mem1"
-    ? getMem1FromWire(root)
-    : root.service_id === "mem2"
-      ? getMem2FromWire(root)
-      : unreachable();
 }
 
 export function getTreeNodeFromWire(root: any): TreeNode {
@@ -434,6 +445,14 @@ export function convertHolderToWire(root: any): Holder {
         : root.data.service_id === "mem2"
           ? convertMem2ToWire(root.data)
           : convertMem3ToWire(root.data),
+    maybe_data:
+      root.maybe_data === null
+        ? null
+        : root.maybe_data.service_id === "mem1"
+          ? convertMem1ToWire(root.maybe_data)
+          : root.maybe_data.service_id === "mem2"
+            ? convertMem2ToWire(root.maybe_data)
+            : unreachable(),
   };
 }
 

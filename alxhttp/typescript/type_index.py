@@ -176,6 +176,8 @@ def _discrimination_expr(src_name: str, type_args: list[type | TypeAliasType]) -
   finished = False
   for n, subtype in enumerate(type_args):
     first_name, first_field_type = _first_real_field(subtype)
+    if should_skip_field(first_name, first_field_type):
+      continue
     if not first_first_name:
       first_first_name = first_name
     assert first_name == first_first_name  # simplifying assumption: all subtypes will have a common first literal key
@@ -344,6 +346,8 @@ class TypeIndex:
       finished = False
       for n, subtype in enumerate(type_args):
         first_name, first_field_type = list(get_type_hints(subtype).items())[0]
+        if should_skip_field(first_name, first_field_type):
+          continue
         if not first_first_name:
           first_first_name = first_name
         assert first_name == first_first_name  # simplifying assumption: all subtypes will have a common first literal key

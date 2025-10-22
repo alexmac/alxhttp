@@ -133,6 +133,7 @@ type Blah = Mem1 | Mem2
 
 class Holder(BaseModel):
   data: ResourceCardData
+  maybe_data: Blah | None
 
 
 cur_dir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
