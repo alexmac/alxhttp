@@ -38,7 +38,10 @@ async def secure_hget(redis: redis.Redis, name: str, cookie_value: str) -> str |
 
   res = await redis.hget(name=name, key=cookie_value)  # pyright: ignore[reportGeneralTypeIssues]
 
-  return res.decode() if res else None  # pyright: ignore[reportAttributeAccessIssue]
+  if isinstance(res, bytes):
+    return res.decode()
+  else:
+    return res
 
 
 @dataclass

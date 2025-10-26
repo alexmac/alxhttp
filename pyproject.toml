@@ -1,6 +1,6 @@
 [project]
 name = "alxhttp"
-version = "0.9.85"
+version = "0.9.86"
 authors = [{ name = "Alexander Macdonald", email = "alex@alexmac.cc" }]
 description = "A better base server for AioHTTP"
 readme = "README.md"
@@ -30,7 +30,7 @@ dependencies = [
 Homepage = "https://github.com/alexmac/alxhttp"
 
 [project.optional-dependencies]
-xray = ['aws-xray-sdk ~= 2.13']
+xray = ['aws-xray-sdk >= 2.13']
 
 [build-system]
 requires = ["setuptools>=61.0"]
