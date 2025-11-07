@@ -20,7 +20,7 @@ class WSRequest[ServerMsgType, MatchInfoType, QueryType](BaseModel):
       {
         'match_info': request.match_info,
         'query': dict(request.query),
-      }
+      },
     )
     m._web_request = request
     return m

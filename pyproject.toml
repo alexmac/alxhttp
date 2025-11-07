@@ -1,6 +1,6 @@
 [project]
 name = "alxhttp"
-version = "0.9.86"
+version = "0.9.87"
 authors = [{ name = "Alexander Macdonald", email = "alex@alexmac.cc" }]
 description = "A better base server for AioHTTP"
 readme = "README.md"
@@ -11,19 +11,19 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 dependencies = [
-  'aiohttp ~= 3.9',
-  'pydantic ~= 2.7',
-  'asyncpg ~= 0.29',
-  'pyhumps ~= 3.8',
-  'pglast ~= 7.7',
-  'redis ~= 6.4',
-  'watchdog ~=6.0',
+  "asyncpg-stubs>=0.30.2",
+  "basedpyright>=1.31.4",
   "pip>=25.0.1",
-  "pytest>=8.3.4",
   "pytest-cov>=6.0.0",
   "pytest-mock>=3.14.0",
-  "basedpyright>=1.31.4",
-  "asyncpg-stubs>=0.30.2",
+  "pytest>=8.3.4",
+  'aiohttp ~= 3.9',
+  'asyncpg ~= 0.29',
+  'pglast ~= 7.7',
+  'pydantic ~= 2.7',
+  'pyhumps ~= 3.8',
+  'redis ~= 6.4',
+  'watchdog ~=6.0',
 ]
 
 [project.urls]

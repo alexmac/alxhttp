@@ -24,8 +24,8 @@ async def save_json(request: Request, handler: Handler) -> StreamResponse:
     body = json.loads(body)
   except Exception:
     pass
-  os.makedirs('output', exist_ok=True)
-  with open(f'output/{ts}_{req_id}.req.json', mode='x') as f:
+  os.makedirs('output/req_res', exist_ok=True)
+  with open(f'output/req_res/{ts}_{req_id}.req.json', mode='x') as f:
     f.write(
       json.dumps(
         {
@@ -52,7 +52,7 @@ async def save_json(request: Request, handler: Handler) -> StreamResponse:
       body = json.loads(body) if body else None
     except Exception:
       pass
-    with open(f'output/{ts}_{req_id}.resp.json', mode='x') as f:
+    with open(f'output/req_res/{ts}_{req_id}.resp.json', mode='x') as f:
       f.write(
         json.dumps(
           {
@@ -69,7 +69,7 @@ async def save_json(request: Request, handler: Handler) -> StreamResponse:
     raise
 
   if isinstance(resp, Response):
-    with open(f'output/{ts}_{req_id}.resp.json', mode='x') as f:
+    with open(f'output/req_res/{ts}_{req_id}.resp.json', mode='x') as f:
       body = None
       try:
         body = resp.body
@@ -91,7 +91,7 @@ async def save_json(request: Request, handler: Handler) -> StreamResponse:
         )
       )
   else:
-    with open(f'output/{ts}_{req_id}.resp.json', mode='x') as f:
+    with open(f'output/req_res/{ts}_{req_id}.resp.json', mode='x') as f:
       f.write(
         json.dumps(
           {
