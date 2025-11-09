@@ -1,6 +1,6 @@
 import types
 import typing
-from datetime import datetime
+from datetime import datetime, date
 from typing import TypeAliasType
 
 from pydantic.types import AwareDatetime
@@ -24,6 +24,8 @@ def pytype_to_tstype(t: type | TypeAliasType, self_type: type | TypeAliasType | 
     return 'number'
   elif is_type_or_alias(t, datetime) or is_type_or_alias(t, AwareDatetime):
     return 'Date'
+  elif is_type_or_alias(t, date):
+    return 'string' # TODO: anythin better?
   elif is_type_or_alias(t, types.NoneType):
     return 'null'
   elif is_type_or_alias(t, TSUndefined):

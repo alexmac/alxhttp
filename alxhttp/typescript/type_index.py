@@ -2,7 +2,7 @@ import typing
 from collections import defaultdict
 from collections.abc import Generator
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, date
 from types import NoneType
 from typing import Any, TypeAliasType, get_type_hints
 
@@ -260,6 +260,8 @@ class TypeIndex:
       return src_name
     elif is_literal(type):
       return src_name
+    elif type == date:
+      return src_name
     elif type == datetime or type == AwareDatetime:  # pyright: ignore[reportUnnecessaryComparison]
       return f'new Date({src_name} * 1000)'
     elif type == Any:
@@ -318,6 +320,8 @@ class TypeIndex:
     elif is_literal(type):
       return src_name
     elif type == NoneType:
+      return src_name
+    elif type == date:
       return src_name
     elif type == datetime or type == AwareDatetime:  # pyright: ignore[reportUnnecessaryComparison]
       return f'{src_name}.getTime()'

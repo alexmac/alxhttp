@@ -65,6 +65,8 @@ def replace_datetime_values_with_timestamps(value: dict[str, Any] | list[Any] | 
     for k, v in value.items():
       if isinstance(v, datetime):
         value[k] = v.timestamp()
+      elif isinstance(v, date):
+        value[k] = v.isoformat()
       elif isinstance(v, dict) or isinstance(v, list):
         value[k] = replace_datetime_values_with_timestamps(v)  # pyright: ignore[reportUnknownArgumentType]
   elif isinstance(value, list):
@@ -75,6 +77,8 @@ def replace_datetime_values_with_timestamps(value: dict[str, Any] | list[Any] | 
 def serialize_datetimes_as_timestamps(value: Any, nxt: pydantic.SerializerFunctionWrapHandler) -> Any:
   if isinstance(value, datetime):
     return value.timestamp()
+  elif isinstance(value, date):
+    return value.isoformat()
   elif isinstance(value, dict) or isinstance(value, list):
     return replace_datetime_values_with_timestamps(value)  # pyright: ignore[reportUnknownArgumentType]
   else:
