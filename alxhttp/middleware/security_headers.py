@@ -14,6 +14,8 @@ def _apply_security_header_defaults(headers: CIMultiDict[str]) -> None:
     headers['x-frame-options'] = 'SAMEORIGIN'
   if 'referrer-policy' not in headers:
     headers['referrer-policy'] = 'strict-origin-when-cross-origin'
+  if 'cross-origin-opener-policy' not in headers:
+    headers['cross-origin-opener-policy'] = 'same-origin-allow-popups'
 
 
 @middleware
