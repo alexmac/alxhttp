@@ -37,5 +37,5 @@ class Response[ResponseType](web.Response):
 
 
 class EmptyResponse(Response[Empty]):
-  def __init__(self):
-    super().__init__(body=Empty())
+  def __init__(self, **kwargs):
+    super().__init__(body=Empty(), **kwargs)

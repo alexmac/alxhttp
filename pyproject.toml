@@ -1,6 +1,6 @@
 [project]
 name = "alxhttp"
-version = "0.9.89"
+version = "0.9.90"
 authors = [{ name = "Alexander Macdonald", email = "alex@alexmac.cc" }]
 description = "A better base server for AioHTTP"
 readme = "README.md"
