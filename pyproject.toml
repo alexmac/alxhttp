@@ -1,6 +1,6 @@
 [project]
 name = "alxhttp"
-version = "0.9.90"
+version = "0.9.92"
 authors = [{ name = "Alexander Macdonald", email = "alex@alexmac.cc" }]
 description = "A better base server for AioHTTP"
 readme = "README.md"
@@ -24,6 +24,7 @@ dependencies = [
   'pyhumps ~= 3.8',
   'redis ~= 6.4',
   'watchdog ~=6.0',
+  "twine>=6.2.0",
 ]
 
 [project.urls]
