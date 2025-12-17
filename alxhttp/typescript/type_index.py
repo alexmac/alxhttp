@@ -2,7 +2,7 @@ import typing
 from collections import defaultdict
 from collections.abc import Generator
 from dataclasses import dataclass, field
-from datetime import datetime, date
+from datetime import date, datetime
 from types import NoneType
 from typing import Any, TypeAliasType, get_type_hints
 
@@ -114,7 +114,7 @@ def extract_enum_references(enum: dict[str, set[str]], model: Any) -> None:
     if is_annotated(field_type):
       targs = typing.get_args(field_type)
       if isinstance(targs[1], TSEnum):
-        enum[targs[1].name].add(targs[1].value)
+        enum[targs[1].name].add(targs[1].value)  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def gen_wire_func(name: str, ret_type: str, object_init: ObjectInit):
@@ -133,9 +133,9 @@ def recurse_model_types(t: type | TypeAliasType, seen: set[type | TypeAliasType]
     return
 
   if is_alias(t):
-    if is_union_of_models(t.__value__):
+    if is_union_of_models(t.__value__):  # pyright: ignore[reportUnknownAttribute, reportAttributeAccessIssue]  # ty:ignore[unresolved-attribute]
       yield t
-    yield from recurse_model_types(t.__value__, seen)
+    yield from recurse_model_types(t.__value__, seen)  # pyright: ignore[reportUnknownAttribute, reportAttributeAccessIssue]  # ty:ignore[unresolved-attribute]
 
   if is_generic_type(t):
     for arg in typing.get_args(t):
@@ -144,6 +144,7 @@ def recurse_model_types(t: type | TypeAliasType, seen: set[type | TypeAliasType]
     yield t
 
     try:
+      assert isinstance(t, type)
       for base in t.mro():
         if base in seen:
           continue

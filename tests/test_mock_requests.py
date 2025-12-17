@@ -7,6 +7,7 @@ from unittest.mock import ANY
 import aiohttp
 import pytest
 from aiohttp.test_utils import make_mocked_request
+from aiohttp.web_response import Response
 from multidict import CIMultiDict
 from pydantic import ValidationError
 
@@ -50,6 +51,7 @@ class TestMockReqs(unittest.IsolatedAsyncioTestCase):
       payload=JSONStreamReader(input_data),
     )
     resp = await validated_empty_api(s, req)
+    assert isinstance(resp, Response)
     await resp.prepare(req)
     assert resp.status == 200
     assert json.loads(resp.text or '') == {}
@@ -66,6 +68,7 @@ class TestMockReqs(unittest.IsolatedAsyncioTestCase):
     req.match_info['user_id'] = str(user_id)
     resp = await validated_api(s, req)
     await resp.prepare(req)
+    assert isinstance(resp, Response)
     assert resp.status == 200
     assert json.loads(resp.text or '') == {'user_id': user_id, 'user_name': 'Alex'}
 

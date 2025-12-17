@@ -30,4 +30,4 @@ class WSRequest[ServerMsgType, MatchInfoType, QueryType](BaseModel):
     await self._ws.prepare(self._web_request)
 
   async def send(self, msg: ServerMsgType) -> None:
-    await self._ws.send_str(msg.model_dump_json())  # pyright: ignore[reportUnknownArgumentType, reportAttributeAccessIssue]
+    await self._ws.send_str(msg.model_dump_json())  # pyright: ignore[reportUnknownArgumentType, reportAttributeAccessIssue]  # ty:ignore[unresolved-attribute]

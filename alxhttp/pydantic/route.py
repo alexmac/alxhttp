@@ -38,14 +38,14 @@ class RouteDetails[ErrorType](BaseRouteDetails[ErrorType]):
 
 def get_route_details(func: Callable[..., Any]) -> RouteDetails[Any]:
   return RouteDetails(
-    name=func._alxhttp_route_name,  # pyright: ignore[reportFunctionMemberAccess]
-    verb=func._alxhttp_route_verb,  # pyright: ignore[reportFunctionMemberAccess]
-    match_info=func._alxhttp_match_info,  # pyright: ignore[reportFunctionMemberAccess]
-    response=func._alxhttp_response,  # pyright: ignore[reportFunctionMemberAccess]
-    body=func._alxhttp_body,  # pyright: ignore[reportFunctionMemberAccess]
-    query=func._alxhttp_query,  # pyright: ignore[reportFunctionMemberAccess]
-    ts_name=func._alxhttp_ts_name,  # pyright: ignore[reportFunctionMemberAccess]
-    errors=func._alxhttp_errors or [],  # pyright: ignore[reportFunctionMemberAccess]
+    name=func._alxhttp_route_name,  # pyright: ignore[reportFunctionMemberAccess]  # ty:ignore[unresolved-attribute]
+    verb=func._alxhttp_route_verb,  # pyright: ignore[reportFunctionMemberAccess]  # ty:ignore[unresolved-attribute]
+    match_info=func._alxhttp_match_info,  # pyright: ignore[reportFunctionMemberAccess]  # ty:ignore[unresolved-attribute]
+    response=func._alxhttp_response,  # pyright: ignore[reportFunctionMemberAccess]  # ty:ignore[unresolved-attribute]
+    body=func._alxhttp_body,  # pyright: ignore[reportFunctionMemberAccess]  # ty:ignore[unresolved-attribute]
+    query=func._alxhttp_query,  # pyright: ignore[reportFunctionMemberAccess]  # ty:ignore[unresolved-attribute]
+    ts_name=func._alxhttp_ts_name,  # pyright: ignore[reportFunctionMemberAccess]  # ty:ignore[unresolved-attribute]
+    errors=func._alxhttp_errors or [],  # pyright: ignore[reportFunctionMemberAccess]  # ty:ignore[unresolved-attribute]
   )
 
 
@@ -60,10 +60,10 @@ def route(
   verb: str,
   name: str,
   ts_name: str | None = None,
-  match_info: type[MatchInfoType] = Empty,
-  body: type[BodyType] = Empty,
-  query: type[QueryType] = Empty,
-  response: type[ResponseType] = Empty,
+  match_info: type[MatchInfoType] = Empty,  # ty:ignore[invalid-parameter-default]
+  body: type[BodyType] = Empty,  # ty:ignore[invalid-parameter-default]
+  query: type[QueryType] = Empty,  # ty:ignore[invalid-parameter-default]
+  response: type[ResponseType] = Empty,  # ty:ignore[invalid-parameter-default]
   errors: list[type[ErrorType]] | None = None,
 ) -> Callable[[TypedRequestHandler[ServerType, MatchInfoType, BodyType, QueryType, ResponseType]], RequestHandler[ServerType]]:
   def decorator(
@@ -71,11 +71,11 @@ def route(
   ) -> RequestHandler[ServerType]:
     new_ts_name = ts_name
     if not new_ts_name:
-      new_ts_name = humps.camelize(func.__name__)
+      new_ts_name = humps.camelize(func.__name__)  # ty:ignore[unresolved-attribute]
 
     @functools.wraps(func)
     async def wrapper(server: ServerType, request: web.Request, *args: Any, **kwargs: Any) -> Response[ResponseType]:
-      vr = await Request[match_info, body, query].from_request(request)
+      vr = await Request[match_info, body, query].from_request(request)  # ty:ignore[invalid-type-form]
       return await func(server, vr, *args, **kwargs)
 
     assert name == name.strip()

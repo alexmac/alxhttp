@@ -4,7 +4,7 @@ import pathlib
 import tempfile
 import unittest
 from datetime import datetime
-from typing import Annotated, Any, ClassVar, Literal, Self, TextIO
+from typing import IO, Annotated, Any, ClassVar, Literal, Self
 
 from pydantic import ConfigDict, Field
 
@@ -139,7 +139,7 @@ class Holder(BaseModel):
 cur_dir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
 
 
-def _snapshot_typeindex(ti: TypeIndex, out: TextIO):
+def _snapshot_typeindex(ti: TypeIndex, out: IO[str]):
   out.write(shared_defs())
   for v in ti.py_to_ts.values():
     out.write(str(v))
@@ -186,7 +186,7 @@ class TestTS(unittest.IsolatedAsyncioTestCase):
     snapshot = cur_dir / 'test_ts.snapshot.ts'
     ti = TypeIndex()
     for t in [WithDefaultsAndAnnotations, Opt, User, Org, RecursiveType, DoubleDict, Holder, ServerMsg, Blah, ResourceCardData, TreeNode]:
-      ti.recurse_model(t, init_from_wire=True, init_to_wire=True)  # pyright: ignore[reportArgumentType]
+      ti.recurse_model(t, init_from_wire=True, init_to_wire=True)  # pyright: ignore[reportArgumentType]  # ty:ignore[invalid-argument-type]
     snapshot_compare(ti, snapshot)
 
   async def test_route_wrappers(self):

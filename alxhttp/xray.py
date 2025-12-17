@@ -7,9 +7,9 @@ from aiohttp.typedefs import Middleware
 from yarl import URL
 
 try:
-  from aws_xray_sdk.core import patch_all, xray_recorder  # pyright: ignore[reportMissingModuleSource]
-  from aws_xray_sdk.core.async_context import AsyncContext  # pyright: ignore[reportMissingModuleSource]
-  from aws_xray_sdk.ext.aiohttp.middleware import middleware as xray_middleware  # pyright: ignore[reportMissingModuleSource]
+  from aws_xray_sdk.core import patch_all, xray_recorder  # pyright: ignore[reportMissingModuleSource]  # ty:ignore[unresolved-import]
+  from aws_xray_sdk.core.async_context import AsyncContext  # pyright: ignore[reportMissingModuleSource]  # ty:ignore[unresolved-import]
+  from aws_xray_sdk.ext.aiohttp.middleware import middleware as xray_middleware  # pyright: ignore[reportMissingModuleSource, reportMissingImports]  # ty:ignore[unresolved-import]
 except ImportError:
   xray_recorder = None
   xray_middleware = None

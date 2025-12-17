@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from typing import cast
 
 
 class Unspecified:
@@ -22,8 +22,8 @@ def _flatten_directives(ds: Directives) -> str:
 
 
 def _handle_directive_allowlist(feature: AllowList, feature_name: str, result: list[str]):
-  if isinstance(feature, Iterable):
-    result.append(f'{feature_name}=({_flatten_directives(feature)})')
+  if isinstance(feature, list):
+    result.append(f'{feature_name}=({_flatten_directives(cast(Directives, feature))})')
 
 
 def permissions_policy(
@@ -64,8 +64,8 @@ def _flatten_sources(ss: Sources) -> str:
 
 
 def _handle_sourcelist(sources: SourceList, policy_name: str, result: list[str]) -> None:
-  if isinstance(sources, Iterable):
-    result.append(f'{policy_name} {_flatten_sources(sources)}')
+  if isinstance(sources, list):
+    result.append(f'{policy_name} {_flatten_sources(cast(Sources, sources))}')
 
 
 def content_security_policy(

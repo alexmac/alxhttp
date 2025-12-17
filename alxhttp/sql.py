@@ -49,8 +49,8 @@ class SQLValidator[T: BaseModel]:
   def query(self) -> str:
     if not self._query:
       self.validate()
-      assert self._query
 
+    assert self._query is not None
     return self._query
 
   def validate(self) -> None:
@@ -85,7 +85,7 @@ class SQLArgValidator[T: BaseModel, **P, PT](SQLValidator[T]):
     This also gives a natural place to perform some type conversions
     """
     ordered = []
-    for field_name in self.argorder.model_fields.keys():  # pyright: ignore[reportFunctionMemberAccess]
+    for field_name in self.argorder.model_fields.keys():  # pyright: ignore[reportFunctionMemberAccess]  # ty:ignore[unresolved-attribute]
       arg = kwargs[field_name]
       if isinstance(arg, BaseModel):
         arg = arg.model_dump_json()

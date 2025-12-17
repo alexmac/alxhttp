@@ -27,7 +27,7 @@ class Response[ResponseType](web.Response):
       body=None,
       status=status,
       reason=reason,
-      text=body.model_dump_json(),  # pyright: ignore[reportAttributeAccessIssue, reportUnknownArgumentType]
+      text=body.model_dump_json(),  # pyright: ignore[reportAttributeAccessIssue, reportUnknownArgumentType]  # ty:ignore[unresolved-attribute]
       headers=headers,
       content_type=content_type,
       charset=charset,

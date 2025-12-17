@@ -1,6 +1,6 @@
 import types
 import typing
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import TypeAliasType
 
 from pydantic.types import AwareDatetime
@@ -17,7 +17,7 @@ def pytype_to_tstype(t: type | TypeAliasType, self_type: type | TypeAliasType | 
   elif is_type_or_alias(t, str):
     return 'string'
   elif is_type_or_alias(t, bytes):
-    return 'string' # TODO: deal with bytes
+    return 'string'  # TODO: deal with bytes
   elif is_type_or_alias(t, bool):
     return 'boolean'
   elif is_type_or_alias(t, int) or is_type_or_alias(t, float):
@@ -25,7 +25,7 @@ def pytype_to_tstype(t: type | TypeAliasType, self_type: type | TypeAliasType | 
   elif is_type_or_alias(t, datetime) or is_type_or_alias(t, AwareDatetime):
     return 'Date'
   elif is_type_or_alias(t, date):
-    return 'string' # TODO: anythin better?
+    return 'string'  # TODO: anythin better?
   elif is_type_or_alias(t, types.NoneType):
     return 'null'
   elif is_type_or_alias(t, TSUndefined):
@@ -42,12 +42,12 @@ def pytype_to_tstype(t: type | TypeAliasType, self_type: type | TypeAliasType | 
     targs = typing.get_args(t)
     if targs[0] in SAFE_PRIMITIVE_TYPES:
       if isinstance(targs[1], TSRaw):
-        if isinstance(targs[1].value, str):
-          return f"'{targs[1].value}'"
+        if isinstance(targs[1].value, str):  # pyright: ignore[reportAttributeAccessIssue]
+          return f"'{targs[1].value}'"  # pyright: ignore[reportAttributeAccessIssue]
         else:
-          return str(targs[1].value)
+          return str(targs[1].value)  # pyright: ignore[reportUnknownArgumentType, reportAttributeAccessIssue]
       elif isinstance(targs[1], TSEnum):
-        return f'{targs[1].name}.{targs[1].value}'
+        return f'{targs[1].name}.{targs[1].value}'  # pyright: ignore[reportAttributeAccessIssue]
       else:
         return pytype_to_tstype(targs[0], self_type=self_type)
     else:

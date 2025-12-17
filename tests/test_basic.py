@@ -83,6 +83,7 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
               'Content-Type': ANY,
               'Date': ANY,
               'referrer-policy': 'strict-origin-when-cross-origin',
+              'cross-origin-opener-policy': 'same-origin-allow-popups',
               'Server': ANY,
               'x-content-type-options': 'nosniff',
               'x-frame-options': 'SAMEORIGIN',
@@ -131,6 +132,7 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
               'Content-Type': ANY,
               'Date': ANY,
               'referrer-policy': 'origin',
+              'cross-origin-opener-policy': 'same-origin-allow-popups',
               'Server': ANY,
               'x-content-type-options': 'bar',
               'x-frame-options': 'waz',
@@ -151,12 +153,14 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
               'request_id': ANY,
               'status_code': 500,
             }
+
             assert resp.headers == {
               'Content-Length': ANY,
               'content-security-policy': "default-src 'self'",
-              'Content-Type': ANY,
+              'Content-Type': 'application/json; charset=utf-8',
               'Date': ANY,
               'referrer-policy': 'strict-origin-when-cross-origin',
+              'cross-origin-opener-policy': 'same-origin-allow-popups',
               'Server': ANY,
               'x-content-type-options': 'nosniff',
               'x-frame-options': 'SAMEORIGIN',

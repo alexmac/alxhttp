@@ -21,7 +21,7 @@ async def secure_hset(redis: redis.Redis, name: str, secure_value: str) -> str:
   """
   cookie_value = gen_prefixed_id(f'{name}_', num_bytes=32)
 
-  await redis.hset(name=name, key=cookie_value, value=secure_value.encode())  # pyright: ignore[reportGeneralTypeIssues, reportArgumentType]
+  await redis.hset(name=name, key=cookie_value, value=secure_value)  # pyright: ignore[reportGeneralTypeIssues, reportArgumentType]  # ty:ignore[invalid-await]
 
   return cookie_value
 
@@ -36,7 +36,7 @@ async def secure_hget(redis: redis.Redis, name: str, cookie_value: str) -> str |
   if not cookie_value.startswith(f'{name}_'):
     raise ValueError('cookie_value is malformed')
 
-  res = await redis.hget(name=name, key=cookie_value)  # pyright: ignore[reportGeneralTypeIssues]
+  res = await redis.hget(name=name, key=cookie_value)  # pyright: ignore[reportGeneralTypeIssues]  # ty:ignore[invalid-await]
 
   if isinstance(res, bytes):
     return res.decode()

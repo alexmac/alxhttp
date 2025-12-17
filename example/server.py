@@ -246,7 +246,7 @@ def loads_clientmsg(msg: str) -> ClientWSMsgs:
     raise ValueError('oops')
 
 
-@ws_route('/api/ws/test', match_info=Empty, client_msg=ClientWSMsgs, server_msg=ServerMsgs)
+@ws_route('/api/ws/test', match_info=Empty, client_msg=ClientWSMsgs, server_msg=ServerMsgs)  # ty:ignore[invalid-argument-type]
 async def ws_test(server: ExampleServer, request: WSRequest[ServerMsgs, Empty, Empty]) -> WebSocketResponse:
   await request.prepare_ws()
 

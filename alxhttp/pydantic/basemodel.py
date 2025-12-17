@@ -1,6 +1,6 @@
 import json
 import typing
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import Annotated, Any, TypeVar, get_type_hints
 
 import asyncpg
@@ -8,7 +8,7 @@ import pydantic
 from aiohttp.web import HTTPError, HTTPNotFound, HTTPSuccessful
 
 from alxhttp.req_id import get_request, get_request_id
-from alxhttp.typescript.type_checks import TypeType, is_dict, is_list, is_model_type, is_optional, is_union_of_models, is_alias
+from alxhttp.typescript.type_checks import TypeType, is_alias, is_dict, is_list, is_model_type, is_optional, is_union_of_models
 from alxhttp.typescript.types import TSEnum
 
 
@@ -21,9 +21,12 @@ def recursive_json_loads(typ: TypeType, data: Any) -> Any:
   if is_optional(typ):
     targs = typing.get_args(typ)
     return recursive_json_loads(targs[0], data)
-  
+
   if is_alias(typ):
     return recursive_json_loads(typ.__value__, data)
+
+  if typ == typing.Any:
+    return data
 
   if is_union_of_models(typ):
     # TODO: stronger checking on the union models
@@ -130,7 +133,7 @@ class ErrorModel(BaseModel):
   status_code: int = 400
   request_id: str | None = None
 
-  def exception(self):  # pyright: ignore[reportIncompatibleMethodOverride, reportImplicitOverride]
+  def exception(self, status_code: int = 400):  # pyright: ignore[reportIncompatibleMethodOverride, reportImplicitOverride]
     """
     Wrap the model in an exception that will render as JSON
 

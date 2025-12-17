@@ -4,10 +4,10 @@
   "sideEffects": false,
   "type": "module",
   "dependencies": {
-    "@tanstack/react-query": "^5.90.2",
-    "prettier": "^3.6.2",
+    "@tanstack/react-query": "^5.90.12",
+    "prettier": "^3.7.4",
     "prettier-plugin-organize-imports": "^4.3.0",
-    "prettier-plugin-tailwindcss": "^0.6.14",
+    "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "^5.9.3"
   },
   "engines": {

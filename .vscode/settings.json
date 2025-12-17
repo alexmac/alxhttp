@@ -11,6 +11,7 @@
   "coverage-gutters.coverageFileNames": ["coverage.xml"],
   "ruff.nativeServer": true,
   "html.suggest.html5": true,
+  "python.languageServer": "None",
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.diagnosticMode": "workspace",
   "cursorpyright.analysis.typeCheckingMode": "basic",
